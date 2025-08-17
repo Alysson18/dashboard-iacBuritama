@@ -139,7 +139,7 @@ function Menu({ conteudo }) {
                     <li className="dropdown">
                         <a href="#acessosRede" className="dropdown-toggle" data-toggle="dropdown">
                             Acessos a Rede <span className="caret"></span>
-                        </a>D
+                        </a>
                         <ul className="dropdown-menu animated fadeInLeft" role="menu">
                             <div className="dropdown-header">Cadastros</div>
                             <li><Link className="nav-link usuario" to="/app/cadastros/pessoas">Cadastro de Acesso</Link></li>

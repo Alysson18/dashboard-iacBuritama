@@ -27,11 +27,21 @@ function AcessoPessoas() {
     }
 
     useEffect(() => {
+        var date = new Date();
+        var primeiroDia = new Date(date.getFullYear(), date.getMonth(), 1);
+        var ultimoDia = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+        // Formatar datas para YYYY-MM-DD
+        const formatarData = (data) => data.toISOString().split('T')[0];
+
+        document.getElementById('dataInicial').value = formatarData(primeiroDia);
+        document.getElementById('dataFinal').value = formatarData(ultimoDia);
+
         const fetchGetList = async () => {
             Loading.show("Aguarde....");
             try {
                 const res = await api.get(
-                    `/pessoas/lista?page=${pagina}&pageSize=10`
+                    `/pessoas/checkinPeriodo/?dataInicial=${document.getElementById('dataInicial').value}&dataFinal=dataInicial=${document.getElementById('dataFinal').value}&page=${pagina}&pageSize=10`
                 );
                 if (res.data.DATA.length > 0) {
                     setPessoa(res.data.DATA);
@@ -67,7 +77,7 @@ function AcessoPessoas() {
             Loading.show("Aguarde....");
             try {
                 const res = await api.get(
-                    `/pessoas/checkinPeriodo/params?dataInicial=${document.getElementById('dataInicial').value}&dataFinal=dataInicial=${document.getElementById('dataFinal').value}&page=${pagina}&pageSize=10`
+                    `/pessoas/checkinPeriodo/?dataInicial=${document.getElementById('dataInicial').value}&dataFinal=dataInicial=${document.getElementById('dataFinal').value}&page=${pagina}&pageSize=10`
                 );
                 if (res.data.DATA.length > 0) {
                     setPessoa(res.data.DATA);
