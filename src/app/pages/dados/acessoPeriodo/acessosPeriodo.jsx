@@ -34,14 +34,14 @@ function AcessoPessoas() {
         // Formatar datas para YYYY-MM-DD
         const formatarData = (data) => data.toISOString().split('T')[0];
 
-        document.getElementById('dataInicial').value = formatarData(primeiroDia);
-        document.getElementById('dataFinal').value = formatarData(ultimoDia);
+        document.getElementById('inputDataInicial').value = formatarData(primeiroDia);
+        document.getElementById('inputDataFinal').value = formatarData(ultimoDia);
 
         const fetchGetList = async () => {
             Loading.show("Aguarde....");
             try {
                 const res = await api.get(
-                    `/pessoas/checkinPeriodo/?dataInicial=${document.getElementById('dataInicial').value}&dataFinal=dataInicial=${document.getElementById('dataFinal').value}&page=${pagina}&pageSize=10`
+                    `/pessoas/checkinPeriodo/?dataInicial=${document.getElementById('inputDataInicial').value}&dataFinal=dataInicial=${document.getElementById('inputDataFinal').value}&page=${pagina}&pageSize=10`
                 );
                 if (res.data.DATA.length > 0) {
                     setPessoa(res.data.DATA);
@@ -99,115 +99,6 @@ function AcessoPessoas() {
         fetchGetList();
     }
 
-    function Alterar() {
-        if (document.getElementById('inputNomeCompleto').value !== '' ||
-            document.getElementById('inputTelefone').value !== '' ||
-            document.getElementById('inputEmail').value !== '' ||
-            document.getElementById('inputMAC').value !== '') {
-            Loading.show('Aguarde...')
-            api.put(`/cadastro`, {
-                NOME: document.getElementById('inputNomeCompleto').value,
-                EMAIL: document.getElementById('inputEmail').value,
-                TELEFONE: document.getElementById('inputTelefone').value,
-                MAC: document.getElementById('inputMAC').value,
-                MEMBRO: document.getElementById('inputMembro').value,
-                ID_PESSOA: decryptData(sessionStorage.getItem('id_pessoa'))
-            }).then(function (AxiosResponse) {
-                Loading.hide();
-                if (AxiosResponse.data.SUCCESS === true) {
-                    toastr.success("Cadastro alterado com sucesso", "Sucesso");
-                    window.$('#modalCadastro').modal('hide');
-                    setControle(controle + 1);
-                    LimparCampos();
-                }
-                else {
-                    toastr.error(AxiosResponse.data.MESSAGE, "Atenção");
-                }
-
-            }).catch(function (error) {
-                Loading.hide();
-                toastr.error(error, "Erro ao cadastrar dados!")
-            });
-        } else {
-            toastr.warning('Todos os campos devem ser prenchidos', "Erro ao cadastrar dados!");
-        }
-
-    }
-
-    function Deletar(id_pessoa) {
-        Loading.show('Aguarde...')
-        api.delete(`/delete/cadastro/${id_pessoa}`).then(function (AxiosResponse) {
-            Loading.hide();
-            if (AxiosResponse.data.SUCCESS === true) {
-                toastr.success("Cadastro deletado com sucesso", "Sucesso");
-                setControle(controle + 1);
-            }
-            else {
-                toastr.error(AxiosResponse.data.MESSAGE, "Atenção");
-            }
-
-        }).catch(function (error) {
-            Loading.hide();
-            toastr.error(error, "Erro ao cadastrar dados!")
-        });
-
-    }
-
-    function Inserir() {
-        if (document.getElementById('inputNomeCompleto').value !== '' ||
-            document.getElementById('inputTelefone').value !== '' ||
-            document.getElementById('inputEmail').value !== '' ||
-            document.getElementById('inputMAC').value !== '') {
-            Loading.show('Aguarde...')
-            api.post(`/cadastro`, {
-                NOME: document.getElementById('inputNomeCompleto').value,
-                EMAIL: document.getElementById('inputEmail').value,
-                TELEFONE: document.getElementById('inputTelefone').value,
-                MAC: document.getElementById('inputMAC').value,
-                ACEITOU_TERMOS: "S",
-                MEMBRO: document.getElementById('inputMAC').value
-            }).then(function (AxiosResponse) {
-                Loading.hide();
-                if (AxiosResponse.data.SUCCESS === true) {
-                    toastr.success("Cadastro realizado com sucesso", "Sucesso");
-                    window.$('#modalCadastro').modal('hide');
-                    setControle(controle + 1);
-                    LimparCampos();
-                }
-                else {
-                    toastr.error(AxiosResponse.data.MESSAGE, "Atenção");
-                }
-
-            }).catch(function (error) {
-                Loading.hide();
-                toastr.error(error, "Erro ao cadastrar dados!")
-            });
-        } else {
-            toastr.warning('Todos os campos devem ser prenchidos', "Erro ao cadastrar dados!");
-        }
-
-    }
-
-    function SalvarCadastro() {
-        if (sessionStorage.getItem('Movimentacao') === 'C') {
-            Inserir();
-            sessionStorage.removeItem('Movimentacao')
-        }
-        else {
-            Alterar();
-            sessionStorage.removeItem('Movimentacao')
-        }
-
-    }
-
-    function LimparCampos() {
-        document.getElementById('inputNomeCompleto').value = '';
-        document.getElementById('inputTelefone').value = '';
-        document.getElementById('inputEmail').value = '';
-        document.getElementById('inputMAC').value = '';
-
-        sessionStorage.removeItem('id_pessoa');
-    }
 
     const type = (navigator.userAgent.match(/Android/i)
         || navigator.userAgent.match(/webOS/i)
