@@ -41,7 +41,7 @@ function AcessoPessoas() {
             Loading.show("Aguarde....");
             try {
                 const res = await api.get(
-                    `/pessoas/checkinPeriodo/?dataInicial=${document.getElementById('inputDataInicial').value}&dataFinal=dataInicial=${document.getElementById('inputDataFinal').value}&page=${pagina}&pageSize=10`
+                    `/pessoas/checkinPeriodo/?dataInicial=${document.getElementById('inputDataInicial').value}&dataFinal=${document.getElementById('inputDataFinal').value}&page=${pagina}&pageSize=10`
                 );
                 if (res.data.DATA.length > 0) {
                     setPessoa(res.data.DATA);
@@ -77,7 +77,7 @@ function AcessoPessoas() {
             Loading.show("Aguarde....");
             try {
                 const res = await api.get(
-                    `/pessoas/checkinPeriodo/?dataInicial=${document.getElementById('dataInicial').value}&dataFinal=dataInicial=${document.getElementById('dataFinal').value}&page=${pagina}&pageSize=10`
+                    `/pessoas/checkinPeriodo/?dataInicial=${document.getElementById('inputDataInicial').value}&dataFinal=${document.getElementById('inputDataFinal').value}&page=${pagina}&pageSize=10`
                 );
                 if (res.data.DATA.length > 0) {
                     setPessoa(res.data.DATA);
