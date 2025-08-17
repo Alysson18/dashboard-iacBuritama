@@ -101,7 +101,7 @@ function Login() {
     return <div className="d-flex align-items-center text-center form-container">
         <div className="card form-signin colorCard">
             <form className="form-signin">
-                <img className="mb-3 mt-3" src="../../img/Logohorizontalbranca.png" alt="" width="300" />
+                <img className="mb-3 mt-3" src="../../img/logoHorizontalBranca.png" alt="" width="300" />
                 <h1 className="h3 mb-3 fw-normal text-white">Login</h1>
 
                 <div className="form-floating mb-1">
