@@ -7,6 +7,7 @@ import login from './app/pages/login/login.jsx';
 import home from './app/pages/home/home.jsx';
 import Pessoas from './app/pages/cadastros/pessoas/pessoas.jsx';
 import QntdAcessoPessoas from './app/pages/dados/qntdAcessoPessoas/qntdAcessosPessoas.jsx'
+import AcessoPessoaPeriodo from './app/pages/dados/acessoPeriodo/acessosPeriodo.jsx'
 
 import Sorteio from './app/pages/sorteio/sorteio.jsx';
 
@@ -33,7 +34,7 @@ function App() {
       <SecureRoute exact path='/app/cadastros/pessoas' component={Pessoas} />
       <SecureRoute exact path='/app/acessos/sorteio' component={Sorteio} />
       <SecureRoute exact path='/app/acessos/quantidade-acesso' component={QntdAcessoPessoas} />
-      <SecureRoute exact path='/app/home' component={home} />
+      <SecureRoute exact path='/app/acessos/acesso-periodo' component={AcessoPessoaPeriodo} />
       <SecureRoute exact path='/app/home' component={home} />
       <SecureRoute exact path='/app/home' component={home} />
       <SecureRoute exact path='/app/home' component={home} />
