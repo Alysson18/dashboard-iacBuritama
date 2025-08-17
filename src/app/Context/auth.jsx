@@ -7,7 +7,7 @@ const AuthContext = React.createContext({});
 function AuthProvider(propis) {
 
     function decryptData(encryptedData) {
-        const bytes = CryptoJS.AES.decrypt(encryptedData.toString(), 'Alysson-2025-ABAC');
+        const bytes = CryptoJS.AES.decrypt(encryptedData.toString(), 'Alysson-2025-IACBURITAMA');
         return bytes.toString(CryptoJS.enc.Utf8);
     }
 
