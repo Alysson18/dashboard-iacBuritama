@@ -1,0 +1,26 @@
+.card-grafico {
+    height: 53vh;
+}
+
+
+@media (max-width: 700px) {
+    .card-grafico {
+        height: 55vh;
+        width: 88vw !important;
+    }
+
+    .body {
+        height: 230vh;
+    }
+
+}
+
+.body {
+    min-height: 110vh;
+}
+
+.select:focus {
+    border-color: #ff6900;
+    box-shadow: 0 3px #ff6900 !important;
+    outline: 0 none;
+}

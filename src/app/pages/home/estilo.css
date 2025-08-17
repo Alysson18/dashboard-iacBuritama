@@ -1,0 +1,157 @@
+body {
+    background-color: #fdfdfd !important;
+}
+
+::-webkit-scrollbar-track {
+    background-color: #181818;
+}
+
+::-webkit-scrollbar {
+    width: 12px;
+    background: #181818;
+    border-radius: 35px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #181818;
+    border-radius: 35px;
+
+}
+
+/* Works on Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #181818 #F4F4F4;
+}
+
+/* Works on Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+    width: 12px;
+}
+
+*::-webkit-scrollbar-track {
+    background: #F4F4F4;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: #181818;
+    border-radius: 20px;
+    border: 3px solid #F4F4F4;
+}
+
+#toast-container>div {
+    opacity: 1;
+}
+
+
+.App {
+    text-align: center;
+}
+
+.App-logo {
+    height: 30vmin;
+    pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .App-logo {
+        animation: App-logo-spin infinite 20s linear;
+    }
+}
+
+.App-header {
+    min-height: 64.1vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(10px + 2vmin);
+    color: white;
+}
+
+.Aguarde {
+    margin-top: 10px;
+    color: #000000;
+    font-size: 25px;
+    font-style: normal;
+    font-weight: bold;
+}
+
+@keyframes App-logo-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.bordaC {
+    border-color: 181818;
+    border-style: inset;
+}
+
+.carousel-caption {
+    color: 181818;
+}
+
+.botaoC {
+    background-color: 181818 !important;
+}
+
+.card {
+    box-shadow: 0px 4px 10px 0px rgb(0 0 0 / 17%);
+    border-radius: 15px !important;
+    padding: 5px !important;
+}
+
+.a {
+    font-size: 30px;
+}
+
+.img {
+    display: flex;
+    justify-content: center;
+}
+
+.titleQ {
+    font-size: 20px;
+}
+
+
+
+
+.botaoHome {
+    background-color: #000000 !important;
+    border-radius: 50% !important;
+    border-style: dashed !important;
+    border-color: #000000;
+    padding: 15px;
+
+}
+
+
+@media (max-width: 700px) {
+    .botaoHome {
+        display: none;
+    }
+
+    .card-graficos {
+        max-height: 60vh;
+    }
+}
+
+.card-graficos {
+    height: 80vh;
+}
+
+.tamanho {
+    height: 50vh;
+}
+
+.toast-container {
+    top: -12px !important;
+    right: 12px !important;
+    position: fixed !important;
+}
