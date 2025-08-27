@@ -26,7 +26,7 @@ function AcessoPessoas() {
         return bytes.toString(CryptoJS.enc.Utf8);
     }
 
-    useEffect(() => {
+    useState(() => {
         var date = new Date();
         var primeiroDia = new Date(date.getFullYear(), date.getMonth(), 1);
         var ultimoDia = new Date(date.getFullYear(), date.getMonth() + 1, 0);
@@ -36,7 +36,10 @@ function AcessoPessoas() {
 
         document.getElementById('inputDataInicial').value = formatarData(primeiroDia);
         document.getElementById('inputDataFinal').value = formatarData(ultimoDia);
+    })
 
+
+    useEffect(() => {
         const fetchGetList = async () => {
             Loading.show("Aguarde....");
             try {
