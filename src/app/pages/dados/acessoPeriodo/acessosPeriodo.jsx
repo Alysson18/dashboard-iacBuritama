@@ -36,7 +36,7 @@ function AcessoPessoas() {
 
         document.getElementById('inputDataInicial').value = formatarData(primeiroDia);
         document.getElementById('inputDataFinal').value = formatarData(ultimoDia);
-    })
+    }, [''])
 
 
     useEffect(() => {
