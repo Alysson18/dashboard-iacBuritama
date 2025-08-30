@@ -26,18 +26,6 @@ function AcessoPessoas() {
         return bytes.toString(CryptoJS.enc.Utf8);
     }
 
-    useState(() => {
-        var date = new Date();
-        var primeiroDia = new Date(date.getFullYear(), date.getMonth(), 1);
-        var ultimoDia = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-
-        // Formatar datas para YYYY-MM-DD
-        const formatarData = (data) => data.toISOString().split('T')[0];
-
-        document.getElementById('inputDataInicial').value = formatarData(primeiroDia);
-        document.getElementById('inputDataFinal').value = formatarData(ultimoDia);
-    }, [''])
-
 
     useEffect(() => {
         const fetchGetList = async () => {
@@ -111,8 +99,17 @@ function AcessoPessoas() {
         || navigator.userAgent.match(/BlackBerry/i)
         || navigator.userAgent.match(/Windows Phone/i) ? 'cardMobileHome' : 'cardWebHome');
 
+    useEffect(() => {
+        var date = new Date();
+        var primeiroDia = new Date(date.getFullYear(), date.getMonth(), 1);
+        var ultimoDia = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
+        // Formatar datas para YYYY-MM-DD
+        const formatarData = (data) => data.toISOString().split('T')[0];
 
+        document.getElementById('inputDataInicial').value = formatarData(primeiroDia);
+        document.getElementById('inputDataFinal').value = formatarData(ultimoDia);
+    }, [''])
 
     const conteudoHtml = <div className='body'>
         <div className={`pt-2  mt-2`}>
@@ -124,7 +121,7 @@ function AcessoPessoas() {
                     <div className="input-group">
                         <input type="date" className="form-control"
                             id='inputDataInicial'
-                            placeholder="Digite uma data Inicial" aria-label="Recipient's username"
+                            placeholder="Digite uma data Inicial" aria-label="Data Inicial"
                             aria-describedby="button-addon2" />
                     </div>
                 </div>
@@ -132,7 +129,7 @@ function AcessoPessoas() {
                     <div className="input-group">
                         <input type="date" className="form-control"
                             id='inputDataFinal'
-                            placeholder="Digite uma data Final" aria-label="Recipient's username"
+                            placeholder="Digite uma data Final" aria-label="Data Final"
                             aria-describedby="button-addon2" />
                     </div>
                 </div>
