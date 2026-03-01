@@ -72,7 +72,12 @@
 }
 
 .nome {
-    width: 390px !important;
+    width: 590px !important;
+}
+
+.fim_Grid {
+    border-top-right-radius: 15px !important;
+    min-width: 160px;
 }
 
 .editar {

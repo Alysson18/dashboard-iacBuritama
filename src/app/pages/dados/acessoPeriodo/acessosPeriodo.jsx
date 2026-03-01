@@ -26,10 +26,22 @@ function AcessoPessoas() {
         return bytes.toString(CryptoJS.enc.Utf8);
     }
 
+    useEffect(() => {
+        var date = new Date();
+        var primeiroDia = new Date(date.getFullYear(), date.getMonth(), 1);
+        var ultimoDia = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+        // Formatar datas para YYYY-MM-DD
+        const formatarData = (data) => data.toISOString().split('T')[0];
+
+        document.getElementById('inputDataInicial').value = formatarData(primeiroDia);
+        document.getElementById('inputDataFinal').value = formatarData(ultimoDia);
+    }, [''])
+
 
     useEffect(() => {
+        Loading.show("Aguarde....");
         const fetchGetList = async () => {
-            Loading.show("Aguarde....");
             try {
                 const res = await api.get(
                     `/pessoas/checkinPeriodo/?dataInicial=${document.getElementById('inputDataInicial').value}&dataFinal=${document.getElementById('inputDataFinal').value}&page=${pagina}&pageSize=10`
@@ -48,8 +60,10 @@ function AcessoPessoas() {
                 Loading.hide();
             }
         };
+        setTimeout(() => {
+            fetchGetList();
+        }, 500)
 
-        fetchGetList();
 
     }, [pagina, controle])
 
@@ -99,17 +113,6 @@ function AcessoPessoas() {
         || navigator.userAgent.match(/BlackBerry/i)
         || navigator.userAgent.match(/Windows Phone/i) ? 'cardMobileHome' : 'cardWebHome');
 
-    useEffect(() => {
-        var date = new Date();
-        var primeiroDia = new Date(date.getFullYear(), date.getMonth(), 1);
-        var ultimoDia = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-
-        // Formatar datas para YYYY-MM-DD
-        const formatarData = (data) => data.toISOString().split('T')[0];
-
-        document.getElementById('inputDataInicial').value = formatarData(primeiroDia);
-        document.getElementById('inputDataFinal').value = formatarData(ultimoDia);
-    }, [''])
 
     const conteudoHtml = <div className='body'>
         <div className={`pt-2  mt-2`}>
@@ -153,7 +156,7 @@ function AcessoPessoas() {
                                 <th className='nome' scope="col">Nome Completo</th>
                                 <th className='nome' scope="col">Telefone</th>
                                 <th className='nome' scope="col">Tipo Pessoa</th>
-                                <th className='nome' scope="col">Data Checkin</th>
+                                <th className='fim_Grid' scope="col">Data Checkin</th>
                             </tr>
                         </thead>
                         <tbody className='text-center'>{

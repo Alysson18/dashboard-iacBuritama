@@ -250,8 +250,8 @@ function Pessoas() {
                                 <th className='codigo' scope="col">Código</th>
                                 <th className='nome' scope="col">Nome Completo</th>
                                 <th className='nome' scope="col">Telefone</th>
-                                <th className='nome' scope="col">Email</th>
                                 <th className='nome' scope="col">Tipo Pessoa</th>
+                                <th className='situacao' scope="col">Situação</th>
                                 <th className='nome' scope="col">Data Cadastro</th>
                                 <th className='delete' scope="col"></th>
                                 <th className='editar' scope="col"></th>
@@ -262,10 +262,10 @@ function Pessoas() {
                                 pessoa?.map((CC) => (
                                     <tr key={CC.ID_PESSOA}>
                                         <td>{CC.ID_PESSOA}</td>
-                                        <td>{CC.NOME.length > 20 ? CC.NOME.slice(0, 20) + '...' : CC.NOME}</td>
+                                        <td>{CC.NOME.length > 50 ? CC.NOME.slice(0, 50) + '...' : CC.NOME}</td>
                                         <td>{Mask.telefone(CC.TELEFONE)}</td>
-                                        <td>{CC.EMAIL}</td>
                                         <td>{(CC.MEMBRO === 'S') ? 'Membro' : 'Visitante'}</td>
+                                        <td>{CC.SITUACAO}</td>
                                         <td>{CC.DATA_CADASTRO}</td>
                                         <td onClick={() => {
                                             Deletar(CC.ID_PESSOA)
@@ -361,15 +361,6 @@ function Pessoas() {
                                         </div>
                                     </div>
                                     <div className="col-md-6 p-1">
-                                        <b className="labelDescC">Email</b>
-                                        <div className="input-group">
-                                            <input type="email"
-                                                id='inputEmail'
-                                                className="form-control form-control-sm"
-                                                aria-label="Email" />
-                                        </div>
-                                    </div>
-                                    <div className="col-md-6 p-1">
                                         <b className="labelDescC">Mac Dispositivo</b>
                                         <div className="input-group">
                                             <input type="text"
@@ -384,6 +375,14 @@ function Pessoas() {
                                         <select class="form-select form-select-sm select" aria-label="Membroe" id="inputMembro">
                                             <option value="S">Membro</option>
                                             <option value="N">Visitante</option>
+                                        </select>
+                                    </div>
+
+                                    <div className='col-md-12 mt-1'>
+                                        <b className="labelDescC">Situação</b>
+                                        <select class="form-select form-select-sm select" aria-label="Membroe" id="inputMembro">
+                                            <option value="A">Ativo</option>
+                                            <option value="I">Inativo</option>
                                         </select>
                                     </div>
 
