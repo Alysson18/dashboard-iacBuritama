@@ -143,7 +143,7 @@ function Menu({ conteudo }) {
                         <ul className="dropdown-menu animated fadeInLeft" role="menu">
                             <div className="dropdown-header">Cadastros</div>
                             <li><Link className="nav-link usuario" to="/app/cadastros/pessoas">Cadastro de Acesso</Link></li>
-                            <li><Link className="nav-link evento" to="/app/cadastro/eventos">Cadasto de Eventos</Link></li>
+                            <li><Link className="nav-link evento" to="/app/cadastros/eventos">Cadastro de Eventos</Link></li>
                             <div className="dropdown-header">Dados</div>
                             <li><Link className="nav-link grafico" to="/app/acessos/acesso-periodo">Acessos por Periodo</Link></li>
                             <li><Link className="nav-link grafico" to="/app/acessos/quantidade-acesso">Qtd. Acessos por Pessoas</Link></li>
@@ -158,11 +158,10 @@ function Menu({ conteudo }) {
                         </a>
                         <ul className="dropdown-menu animated fadeInLeft" role="menu">
                             <div className="dropdown-header">Cadastros</div>
-                            <li><Link className="nav-link email" to="/app/conta-corrente">Mensagens de Email</Link></li>
-                            <li><Link className="nav-link whatsapp" to="/app/conta-corrente">Mensagens do WhatsApp</Link></li>
+                            <li><Link className="nav-link email" to="/app/mensagens/cadastro">Cadastrar Mensagens</Link></li>
                             <div className="dropdown-header">Disparo</div>
-                            <li><Link className="nav-link email" to="/app/conta-corrente">Email</Link></li>
-                            <li><Link className="nav-link whatsapp" to="/app/condicao-pagamento">WhatsApp</Link></li>
+                            <li><Link className="nav-link whatsapp" to="/app/mensagens/disparo">Disparo WhatsApp</Link></li>
+                            <li><Link className="nav-link email" to="/app/mensagens/agendamento">Agendar Disparo</Link></li>
                         </ul>
                     </li>
 

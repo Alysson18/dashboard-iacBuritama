@@ -10,8 +10,10 @@ import QntdAcessoPessoas from './app/pages/dados/qntdAcessoPessoas/qntdAcessosPe
 import AcessoPessoaPeriodo from './app/pages/dados/acessoPeriodo/acessosPeriodo.jsx'
 
 import Sorteio from './app/pages/sorteio/sorteio.jsx';
-
-
+import Eventos from './app/pages/cadastros/eventos/eventos.jsx';
+import MensagensCadastro from './app/pages/mensagens/cadastro/cadastro.jsx';
+import MensagensDisparo from './app/pages/mensagens/disparo/disparo.jsx';
+import MensagensAgendamento from './app/pages/mensagens/agendamento/agendamento.jsx';
 /*Soluções*/
 
 function App() {
@@ -32,13 +34,13 @@ function App() {
       <Route exact path='/' component={login} />
       <SecureRoute exact path='/app/home' component={home} />
       <SecureRoute exact path='/app/cadastros/pessoas' component={Pessoas} />
+      <SecureRoute exact path='/app/cadastros/eventos' component={Eventos} />
+      <SecureRoute exact path='/app/mensagens/cadastro' component={MensagensCadastro} />
+      <SecureRoute exact path='/app/mensagens/disparo' component={MensagensDisparo} />
+      <SecureRoute exact path='/app/mensagens/agendamento' component={MensagensAgendamento} />
       <SecureRoute exact path='/app/acessos/sorteio' component={Sorteio} />
       <SecureRoute exact path='/app/acessos/quantidade-acesso' component={QntdAcessoPessoas} />
       <SecureRoute exact path='/app/acessos/acesso-periodo' component={AcessoPessoaPeriodo} />
-      <SecureRoute exact path='/app/home' component={home} />
-      <SecureRoute exact path='/app/home' component={home} />
-      <SecureRoute exact path='/app/home' component={home} />
-      <SecureRoute exact path='/app/home' component={home} />
 
       <Route exact path='/*' component={login} />
     </Switch>

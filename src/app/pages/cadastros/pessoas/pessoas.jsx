@@ -13,6 +13,7 @@ function Pessoas() {
 
     const [pessoa, setPessoa] = useState([]);
     const [descricao, setDescricao] = useState('');
+    const [situacaoFiltro, setSituacaoFiltro] = useState('A');
     const [pagina, setPagina] = useState(1);
     const [pageCount, setpageCount] = useState(1);
     const [controle, setControle] = useState(0);
@@ -30,27 +31,32 @@ function Pessoas() {
         const fetchGetList = async () => {
             Loading.show("Aguarde....");
             try {
-                const res = await api.get(
-                    `/pessoas/lista?page=${pagina}&pageSize=10`
-                );
-                if (res.data.DATA.length > 0) {
+
+                let url = `/pessoas/lista?situacao=${situacaoFiltro}&nome=${descricao}&page=${pagina}&pageSize=9`;
+
+                const res = await api.get(url);
+                if (res.data.DATA && res.data.DATA.length > 0) {
                     setPessoa(res.data.DATA);
                     const total = Number(res.data.TOTALPAGES);
                     setpageCount(Math.ceil(total));
                 }
-                else if (res.data.SUCCESS === false) {
-                    toastr.error(res.data.MESSAGE, 'Erro!');
+                else {
+                    setPessoa([]);
+                    setpageCount(1);
+                    if (res.data.SUCCESS === false && res.data.MESSAGE) {
+                        toastr.error(res.data.MESSAGE, 'Atenção');
+                    }
                 }
             } catch (error) {
-                toastr.error(error, "Erro ao buscar lista de pessoas");
+                toastr.error(error.message || error, "Erro ao buscar lista de pessoas");
             } finally {
                 Loading.hide();
             }
         };
 
         fetchGetList();
-
-    }, [pagina, controle])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pagina, controle,])
 
     const handlePageClick = async (data) => {
         let currentPage = data.selected + 1;
@@ -61,46 +67,17 @@ function Pessoas() {
         setDescricao(event.target.value)
     }
 
-    function BuscarNome(value) {
-        Loading.show("Aguarde....")
-        const fetchGetList = async () => {
-            Loading.show("Aguarde....");
-            try {
-                const res = await api.get(
-                    `/pessoas/lista/params?descricao=${value}&id_empresa=${decryptData(sessionStorage.getItem('id_empresa'))}&page=${pagina}&pageSize=10`
-                );
-                if (res.data.DATA.length > 0) {
-                    setPessoa(res.data.DATA);
-                    const total = Number(res.data.TOTALPAGES);
-                    setpageCount(Math.ceil(total));
-                }
-                else {
-                    setPessoa(res.data.DATA);
-                    const total = Number(res.data.TOTALPAGES);
-                    setpageCount(Math.ceil(total));
-                }
-            } catch (error) {
-                toastr.error("Erro ao buscar lista de funções:", error);
-            } finally {
-                Loading.hide();
-            }
-        };
-
-        fetchGetList();
-    }
-
     function Alterar() {
         if (document.getElementById('inputNomeCompleto').value !== '' ||
             document.getElementById('inputTelefone').value !== '' ||
-            document.getElementById('inputEmail').value !== '' ||
             document.getElementById('inputMAC').value !== '') {
             Loading.show('Aguarde...')
             api.put(`/cadastro`, {
                 NOME: document.getElementById('inputNomeCompleto').value,
-                EMAIL: document.getElementById('inputEmail').value,
                 TELEFONE: document.getElementById('inputTelefone').value,
                 MAC: document.getElementById('inputMAC').value,
                 MEMBRO: document.getElementById('inputMembro').value,
+                SITUACAO: document.getElementById('inputSituacao').value,
                 ID_PESSOA: decryptData(sessionStorage.getItem('id_pessoa'))
             }).then(function (AxiosResponse) {
                 Loading.hide();
@@ -146,12 +123,10 @@ function Pessoas() {
     function Inserir() {
         if (document.getElementById('inputNomeCompleto').value !== '' ||
             document.getElementById('inputTelefone').value !== '' ||
-            document.getElementById('inputEmail').value !== '' ||
             document.getElementById('inputMAC').value !== '') {
             Loading.show('Aguarde...')
             api.post(`/cadastro`, {
                 NOME: document.getElementById('inputNomeCompleto').value,
-                EMAIL: document.getElementById('inputEmail').value,
                 TELEFONE: document.getElementById('inputTelefone').value,
                 MAC: document.getElementById('inputMAC').value,
                 ACEITOU_TERMOS: "S",
@@ -193,7 +168,6 @@ function Pessoas() {
     function LimparCampos() {
         document.getElementById('inputNomeCompleto').value = '';
         document.getElementById('inputTelefone').value = '';
-        document.getElementById('inputEmail').value = '';
         document.getElementById('inputMAC').value = '';
 
         sessionStorage.removeItem('id_pessoa');
@@ -217,19 +191,22 @@ function Pessoas() {
             </div>
             <div className="row mt-4">
                 <div className='col-md-6 mt-1'>
-                    <div className="input-group" hidden>
+                    <div className="input-group">
                         <input type="text" className="form-control"
                             onChange={(e) => alterarDescricao(e)}
                             placeholder="Digite um Nome para Buscar..." aria-label="Recipient's username"
                             aria-describedby="button-addon2" />
-                        <button onClick={() => descricao !== '' ? BuscarNome(descricao) : setControle(controle + 1)}
-                            className="btn btn-outline-secondary" type="button" id="button-addon2">Consultar</button>
                     </div>
                 </div>
-                <div className='col-md-3'>
+                <div className='col-md-3 mt-1'>
                     <div className="input-group">
-
-
+                        <select className="form-select" value={situacaoFiltro} onChange={(e) => setSituacaoFiltro(e.target.value)}>
+                            <option value="A">Ativo</option>
+                            <option value="I">Inativo</option>
+                            <option value="T">Todos</option>
+                        </select>
+                        <button onClick={() => { setPagina(1); setControle(controle + 1); }}
+                            className="btn btn-outline-secondary" type="button" id="button-addon2">Consultar</button>
                     </div>
                 </div>
                 <div className='col-md-3 mt-1'>
@@ -265,7 +242,7 @@ function Pessoas() {
                                         <td>{CC.NOME.length > 50 ? CC.NOME.slice(0, 50) + '...' : CC.NOME}</td>
                                         <td>{Mask.telefone(CC.TELEFONE)}</td>
                                         <td>{(CC.MEMBRO === 'S') ? 'Membro' : 'Visitante'}</td>
-                                        <td>{CC.SITUACAO}</td>
+                                        <td>{CC.SITUACAO === 'A' ? 'Ativo' : 'Inativo'}</td>
                                         <td>{CC.DATA_CADASTRO}</td>
                                         <td onClick={() => {
                                             Deletar(CC.ID_PESSOA)
@@ -279,8 +256,8 @@ function Pessoas() {
                                             sessionStorage.setItem('id_pessoa', encryptData(CC.ID_PESSOA))
                                             document.getElementById('inputNomeCompleto').value = CC.NOME;
                                             document.getElementById('inputTelefone').value = CC.TELEFONE;
-                                            document.getElementById('inputEmail').value = CC.EMAIL;
                                             document.getElementById('inputMAC').value = CC.MAC;
+                                            document.getElementById('inputSituacao').value = CC.SITUACAO;
                                             document.getElementById('inputMembro').value = (CC.MEMBRO === 'S') ? 'S' : 'N';
                                             window.$('#modalCadastro').modal('show');
                                         }} className='text-center'>
@@ -378,9 +355,9 @@ function Pessoas() {
                                         </select>
                                     </div>
 
-                                    <div className='col-md-12 mt-1'>
+                                    <div className='col-md-6 mt-1'>
                                         <b className="labelDescC">Situação</b>
-                                        <select class="form-select form-select-sm select" aria-label="Membroe" id="inputMembro">
+                                        <select class="form-select form-select-sm select" aria-label="Membroe" id="inputSituacao">
                                             <option value="A">Ativo</option>
                                             <option value="I">Inativo</option>
                                         </select>
