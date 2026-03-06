@@ -147,7 +147,7 @@ function Menu({ conteudo }) {
                             <div className="dropdown-header">Dados</div>
                             <li><Link className="nav-link grafico" to="/app/acessos/acesso-periodo">Acessos por Periodo</Link></li>
                             <li><Link className="nav-link grafico" to="/app/acessos/quantidade-acesso">Qtd. Acessos por Pessoas</Link></li>
-                            <li><Link className="nav-link grafico" to="/app/acessos/acesso-pessoa">Acessos por Pessoas</Link></li>
+                            {/* <li><Link className="nav-link grafico" to="/app/acessos/acesso-pessoa">Acessos por Pessoas</Link></li> */}
                             <div className="dropdown-header">Sorteio</div>
                             <li><Link className="nav-link sorteio" to="/app/acessos/sorteio">Sortear</Link></li>
                         </ul>

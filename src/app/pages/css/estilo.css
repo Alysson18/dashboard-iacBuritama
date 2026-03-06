@@ -9,7 +9,13 @@
     color: white;
 }
 
-
+.scrollVertical {
+    max-height: 210px;
+    display: block;
+    overflow-y: auto !important;
+    -ms-overflow-style:
+        -ms-autohiding-scrollbar !important;
+}
 
 .icone-acao {
     margin-left: 7px !important;
