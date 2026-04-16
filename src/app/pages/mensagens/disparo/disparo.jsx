@@ -4,8 +4,7 @@ import toastr from 'toastr';
 import 'toastr/build/toastr.min.css';
 import api from '../../../config/api.js';
 import Loading from '../../../components/loading/loading.js';
-import toastr from 'toastr';
-import 'toastr/build/toastr.min.css';
+
 
 function MensagensDisparo() {
 
