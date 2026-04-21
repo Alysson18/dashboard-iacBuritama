@@ -8,6 +8,8 @@ import toastr from 'toastr';
 import 'toastr/build/toastr.min.css';
 import md5 from 'md5';
 import PlanejamentoGastos from '../pages/relatorios/extratoMensalLista/extratoLista.jsx';
+import { socket } from '../config/socket.js';
+
 
 function Menu({ conteudo }) {
     const [empresas, setEmpresas] = useState([])
@@ -79,6 +81,64 @@ function Menu({ conteudo }) {
     //     // eslint-disable-next-line
     // }, '')
 
+
+    // Global Notification effect
+    useEffect(() => {
+        if ("Notification" in window) {
+            Notification.requestPermission();
+        }
+
+        const audio = new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg ");
+
+        const handleTicketNovo = (payload) => {
+            if (payload.REMETENTE === 'CLIENTE') {
+                audio.play().catch(e => console.log("Audio block", e));
+                const title = "🎫 Novo Ticket WhatsApp";
+                const bodyMsg = payload.TEXTO ? (payload.TEXTO.length > 40 ? payload.TEXTO.substring(0, 40) + '...' : payload.TEXTO) : "Novo ticket aberto";
+                showNotification(title, bodyMsg, payload);
+            }
+        };
+
+        const handleConversaTicket = (payload) => {
+            if (payload.REMETENTE === 'CLIENTE') {
+                const myId = decryptData(sessionStorage.getItem('id_usuario'));
+                // Notifica apenas se eu for o dono do ticket
+                if (payload.ID_OPERADOR && String(payload.ID_OPERADOR) === String(myId)) {
+                    audio.play().catch(e => console.log("Audio block", e));
+                    const title = "💬 Nova Mensagem";
+                    const bodyMsg = payload.TEXTO ? (payload.TEXTO.length > 40 ? payload.TEXTO.substring(0, 40) + '...' : payload.TEXTO) : "Mensagem recebida";
+                    showNotification(title, bodyMsg, payload);
+                }
+            }
+        };
+
+        const showNotification = (title, body, payload) => {
+            if ("Notification" in window && Notification.permission === "granted") {
+                const notification = new Notification(title, { body });
+                notification.onclick = () => {
+                    const encryptedId = CryptoJS.AES.encrypt(payload.ID_TICKET.toString(), 'Alysson-2025-IACBURITAMA').toString();
+                    sessionStorage.setItem('ticket', encryptedId);
+                    window.location.href = `/app/atendimento/chat?wa_id=${payload.WA_ID || ''}&nome=${payload.NOME || 'Cliente'}`;
+                };
+            } else {
+                toastr.info(body, title);
+            }
+        }
+
+        const decryptData = (encryptedData) => {
+            if (!encryptedData) return "";
+            const bytes = CryptoJS.AES.decrypt(encryptedData.toString(), 'Alysson-2025-IACBURITAMA');
+            return bytes.toString(CryptoJS.enc.Utf8);
+        };
+
+        socket.on('ticket_novo', handleTicketNovo);
+        socket.on('conversa_ticket', handleConversaTicket);
+
+        return () => {
+            socket.off('ticket_novo', handleTicketNovo);
+            socket.off('conversa_ticket', handleConversaTicket);
+        };
+    }, []);
 
     useEffect(() => {
         var trigger = window.$('.hamburger'),
@@ -162,6 +222,16 @@ function Menu({ conteudo }) {
                             <div className="dropdown-header">Disparo</div>
                             <li><Link className="nav-link whatsapp" to="/app/mensagens/disparo">Disparo WhatsApp</Link></li>
                             <li><Link className="nav-link email" to="/app/mensagens/agendamento">Agendar Disparo</Link></li>
+                        </ul>
+                    </li>
+
+                    <li className="dropdown">
+                        <a href="#atendimento" className="dropdown-toggle" data-toggle="dropdown">
+                            Atendimento<span className="caret"></span>
+                        </a>
+                        <ul className="dropdown-menu animated fadeInLeft" role="menu">
+                            <div className="dropdown-header">WhatsApp</div>
+                            <li><Link className="nav-link whatsapp" to="/app/atendimento/tickets">Caixa de Entrada</Link></li>
                         </ul>
                     </li>
 

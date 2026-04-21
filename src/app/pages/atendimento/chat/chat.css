@@ -1,0 +1,117 @@
+.chat-container {
+    height: 75vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #e5ddd5;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+}
+
+.chat-history {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    /* Background pattern like WA */
+    background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+    background-repeat: repeat;
+}
+
+.chat-bubble {
+    max-width: 65%;
+    min-width: 100px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    position: relative;
+    word-wrap: break-word;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+.chat-bubble.cliente {
+    background-color: #fff;
+    align-self: flex-start;
+    border-top-left-radius: 0;
+}
+
+.chat-bubble.operador {
+    background-color: #dcf8c6;
+    align-self: flex-end;
+    border-top-right-radius: 0;
+}
+
+.chat-time {
+    display: block;
+    font-size: 0.65rem;
+    color: rgba(0, 0, 0, 0.45);
+    text-align: right;
+    margin-top: 4px;
+}
+
+.chat-input-container {
+    display: flex;
+    padding: 10px 15px;
+    background-color: #f0f0f0;
+    align-items: center;
+    border-top: 1px solid #ddd;
+}
+
+.chat-input-container input {
+    flex: 1;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 30px;
+    outline: none;
+    font-size: 15px;
+}
+
+.chat-input-container button {
+    margin-left: 10px;
+    border-radius: 25%;
+    width: 55px;
+    height: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #00a884;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.chat-input-container button:hover {
+    background-color: #008f68;
+}
+
+.chat-operator-name {
+    font-weight: bold;
+    font-size: 0.85rem;
+    color: #075e54;
+    margin-bottom: 2px;
+    display: block;
+}
+
+.chat-input-container button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.status-badge-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.status-badge-container span {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: #555;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}

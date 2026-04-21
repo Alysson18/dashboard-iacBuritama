@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import NavBar from '../../../components/menu.jsx';
 import toastr from 'toastr';
 import 'toastr/build/toastr.min.css';
@@ -7,6 +7,22 @@ import Loading from '../../../components/loading/loading.js';
 
 
 function MensagensDisparo() {
+
+    const [templates, setTemplates] = useState([]);
+
+    useEffect(() => {
+        async function fetchTemplates() {
+            try {
+                const res = await api.get('/templates/listaMeta');
+                if (res.data && res.data.DATA) {
+                    setTemplates(res.data.DATA);
+                }
+            } catch (error) {
+                console.error("Erro ao carregar templates", error);
+            }
+        }
+        fetchTemplates();
+    }, []);
 
     function EnviarMensagem() {
         Loading.show('Aguarde...')
@@ -47,7 +63,9 @@ function MensagensDisparo() {
                         <b className="labelDescC">Selecione a Mensagem</b>
                         <select className="form-select form-select-sm select" id='inputTemplate'>
                             <option value="">Selecione a mensagem já cadastrada...</option>
-                            <option value="convite_acmovement">Convite AC Movement</option>
+                            {templates.map((tpl) => (
+                                <option key={tpl.id} value={tpl.name}>{tpl.nome}</option>
+                            ))}
                         </select>
                     </div>
                 </div>
