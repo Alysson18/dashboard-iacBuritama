@@ -84,16 +84,68 @@ function Menu({ conteudo }) {
 
     // Global Notification effect
     useEffect(() => {
-        if ("Notification" in window) {
-            Notification.requestPermission();
-        }
-
         const audio = new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg ");
+
+        // Request notification permission
+        const askPermission = async () => {
+            if ("Notification" in window && Notification.permission === "default") {
+                await Notification.requestPermission();
+            }
+        };
+        askPermission();
+
+        // Wake Lock to keep screen on (best effort for mobile background)
+        let wakeLock = null;
+        const requestWakeLock = async () => {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                }
+            } catch (err) {
+                console.error(`${err.name}, ${err.message}`);
+            }
+        };
+        requestWakeLock();
+
+        const decryptLocal = (encryptedData) => {
+            if (!encryptedData) return "";
+            const bytes = CryptoJS.AES.decrypt(encryptedData.toString(), 'Alysson-2025-IACBURITAMA');
+            return bytes.toString(CryptoJS.enc.Utf8);
+        };
+
+        const isViewingThisTicket = (targetWaId) => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentPath = window.location.pathname;
+            const currentWaId = urlParams.get('wa_id');
+            return currentPath.includes('/atendimento/chat') && currentWaId === targetWaId;
+        };
+
+        const showNotification = (title, body, payload) => {
+            if ("Notification" in window && Notification.permission === "granted") {
+                try {
+                    const notification = new Notification(title, { body, icon: '/img/logoHorizontalBranca.png' });
+                    notification.onclick = () => {
+                        window.focus();
+                        const encryptedId = CryptoJS.AES.encrypt(payload.ID_TICKET.toString(), 'Alysson-2025-IACBURITAMA').toString();
+                        sessionStorage.setItem('ticket', encryptedId);
+                        window.location.href = `/app/atendimento/chat?wa_id=${payload.WA_ID || ''}&nome=${payload.NOME || 'Cliente'}`;
+                    };
+                } catch (e) {
+                    toastr.info(body, title);
+                }
+            } else {
+                toastr.info(body, title);
+            }
+        };
 
         const handleTicketNovo = (payload) => {
             if (payload.REMETENTE === 'CLIENTE') {
                 audio.play().catch(e => console.log("Audio block", e));
-                const title = "🎫 Novo Ticket WhatsApp";
+                
+                // Se já estiver na conversa, não mostra notificação visual
+                if (isViewingThisTicket(payload.WA_ID)) return;
+
+                const title = "🎫 Novo Ticket WhatsApp de: " + payload.NOME;
                 const bodyMsg = payload.TEXTO ? (payload.TEXTO.length > 40 ? payload.TEXTO.substring(0, 40) + '...' : payload.TEXTO) : "Novo ticket aberto";
                 showNotification(title, bodyMsg, payload);
             }
@@ -101,35 +153,22 @@ function Menu({ conteudo }) {
 
         const handleConversaTicket = (payload) => {
             if (payload.REMETENTE === 'CLIENTE') {
-                const myId = decryptData(sessionStorage.getItem('id_usuario'));
+                const myId = decryptLocal(sessionStorage.getItem('id_usuario'));
                 // Notifica apenas se eu for o dono do ticket
                 if (payload.ID_OPERADOR && String(payload.ID_OPERADOR) === String(myId)) {
                     audio.play().catch(e => console.log("Audio block", e));
-                    const title = "💬 Nova Mensagem";
+                    
+                    // Se já estiver na conversa, não mostra notificação visual
+                    if (isViewingThisTicket(payload.WA_ID)) return;
+
+                    const title = "💬 Nova Mensagem de: " + payload.NOME;
                     const bodyMsg = payload.TEXTO ? (payload.TEXTO.length > 40 ? payload.TEXTO.substring(0, 40) + '...' : payload.TEXTO) : "Mensagem recebida";
                     showNotification(title, bodyMsg, payload);
                 }
             }
         };
 
-        const showNotification = (title, body, payload) => {
-            if ("Notification" in window && Notification.permission === "granted") {
-                const notification = new Notification(title, { body });
-                notification.onclick = () => {
-                    const encryptedId = CryptoJS.AES.encrypt(payload.ID_TICKET.toString(), 'Alysson-2025-IACBURITAMA').toString();
-                    sessionStorage.setItem('ticket', encryptedId);
-                    window.location.href = `/app/atendimento/chat?wa_id=${payload.WA_ID || ''}&nome=${payload.NOME || 'Cliente'}`;
-                };
-            } else {
-                toastr.info(body, title);
-            }
-        }
 
-        const decryptData = (encryptedData) => {
-            if (!encryptedData) return "";
-            const bytes = CryptoJS.AES.decrypt(encryptedData.toString(), 'Alysson-2025-IACBURITAMA');
-            return bytes.toString(CryptoJS.enc.Utf8);
-        };
 
         socket.on('ticket_novo', handleTicketNovo);
         socket.on('conversa_ticket', handleConversaTicket);
@@ -137,6 +176,9 @@ function Menu({ conteudo }) {
         return () => {
             socket.off('ticket_novo', handleTicketNovo);
             socket.off('conversa_ticket', handleConversaTicket);
+            if (wakeLock !== null) {
+                wakeLock.release().then(() => { wakeLock = null; });
+            }
         };
     }, []);
 
@@ -226,12 +268,12 @@ function Menu({ conteudo }) {
                     </li>
 
                     <li className="dropdown">
-                        <a href="#atendimento" className="dropdown-toggle" data-toggle="dropdown">
+                        <a href="#atendimento" className="dropdown-toggle whatsapp" data-toggle="dropdown">
                             Atendimento<span className="caret"></span>
                         </a>
                         <ul className="dropdown-menu animated fadeInLeft" role="menu">
-                            <div className="dropdown-header">WhatsApp</div>
-                            <li><Link className="nav-link whatsapp" to="/app/atendimento/tickets">Caixa de Entrada</Link></li>
+                            <div className="dropdown-header">Atendimento</div>
+                            <li><Link className="nav-link whatsapp" to="/app/atendimento/tickets">WhatsApp</Link></li>
                         </ul>
                     </li>
 

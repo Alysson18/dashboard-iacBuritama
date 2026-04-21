@@ -19,7 +19,9 @@ function TicketChat() {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
     const [ticketInfo, setTicketInfo] = useState(null);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const messagesEndRef = useRef(null);
+    const emojis = ["😀", "😃", "😄", "😁", "😅", "😂", "🤣", "😊", "😇", "🙂", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚", "😋", "😛", "😜", "🤪", "🤨", "🧐", "🤓", "😎", "🤩", "🥳", "😏", "😒", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🤭", "🤫", "🤥", "😶", "😐", "😑", "😬", "🙄", "😯", "😦", "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😵", "🤐", "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈", "👿", "👹", "👺", "🤡", "💩", "👻", "💀", "☠️", "👽", "👾", "🤖", "🎃", "😺", "😸", "😻", "😼", "😽", "🙀", "😿", "😾", "👋", "🤚", "🖐", "✋", "🖖", "👌", "🤏", "✌️", "🤞", "🤟", "🤘", "🤙", "👈", "👉", "👆", "🖕", "👇", "☝️", "👍", "👎", "✊", "👊", "🤛", "🤜", "👏", "🙌", "👐", "🤲", "🤝", "🙏", "✍️", "💅", "🤳", "💪", "🦾", "🦵", "🦿", "🦶", "👣", "👂", "🦻", "👃", "🧠", "🦷", "🦴", "👀", "👁", "👅", "👄", "💋", "🩸", "❤️", "🧡", "💛", "💚", "💙", "💜", "🖤", "🤍", "🤎", "💔", "❣️", "💕", "💞", "💓", "💗", "💖", "💘", "💝", "💟"];
 
     const decryptData = (encryptedData) => {
         if (!encryptedData) return "";
@@ -170,6 +172,11 @@ function TicketChat() {
         }
     };
 
+    const addEmoji = (emoji) => {
+        setNewMessage(prev => prev + emoji);
+        setShowEmojiPicker(false);
+    };
+
     const formatTime = (isoString) => {
         if (!isoString) return '';
         const d = new Date(isoString);
@@ -233,6 +240,14 @@ function TicketChat() {
                     </div>
 
                     <form className="chat-input-container" onSubmit={handleSendMessage}>
+                        <div className="emoji-toggle" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>😀</div>
+                        {showEmojiPicker && (
+                            <div className="emoji-picker-custom">
+                                {emojis.map((emoji, idx) => (
+                                    <span key={idx} onClick={() => addEmoji(emoji)}>{emoji}</span>
+                                ))}
+                            </div>
+                        )}
                         <input
                             type="text"
                             placeholder={!ticketInfo?.ID_OPERADOR ? "Capture o atendimento para digitar." : (expired ? "Janela de WhatsApp expirou (+24h)." : ticketInfo?.STATUS === 'FECHADO' ? "Atendimento encerrado." : (wa_id ? "Escreva uma mensagem..." : "WhatsApp ID não disponível."))}
@@ -240,8 +255,8 @@ function TicketChat() {
                             onChange={(e) => setNewMessage(e.target.value)}
                             disabled={!wa_id || expired || ticketInfo?.STATUS === 'FECHADO' || !ticketInfo?.ID_OPERADOR}
                         />
-                        <button type="submit" disabled={!wa_id || !newMessage.trim() || expired || ticketInfo?.STATUS === 'FECHADO' || !ticketInfo?.ID_OPERADOR}>
-                            Enviar
+                        <button type="submit" className='send-button' disabled={!wa_id || !newMessage.trim() || expired || ticketInfo?.STATUS === 'FECHADO' || !ticketInfo?.ID_OPERADOR}>
+
                         </button>
                     </form>
                 </div>

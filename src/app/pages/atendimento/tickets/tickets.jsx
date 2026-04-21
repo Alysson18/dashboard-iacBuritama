@@ -89,9 +89,10 @@ function TicketsLista() {
                                 <tr className="tabela">
                                     <th className='codigo' scope="col">ID</th>
                                     <th className='nome' scope="col">Nome</th>
-                                    <th className='nome' scope="col">WhatsApp</th>
+                                    <th className='nome d-none d-sm-table-cell' scope="col">WhatsApp</th>
                                     <th className='situacao' scope="col">Status</th>
-                                    <th className='nome' scope="col">Data Criação</th>
+                                    <th className='nome d-none d-md-table-cell' scope="col">Data Criação</th>
+                                    <th className='nome' scope="col">Operador</th>
                                     <th className='editar ebtn text-center' scope="col">Ação</th>
                                 </tr>
                             </thead>
@@ -101,13 +102,14 @@ function TicketsLista() {
                                         <tr key={t.ID_TICKET}>
                                             <td>{t.ID_TICKET}</td>
                                             <td>{t.NOME}</td>
-                                            <td>{t.WA_ID}</td>
+                                            <td className='d-none d-sm-table-cell'>{t.WA_ID}</td>
                                             <td>
                                                 <span className={`badge bg-${t.STATUS === 'FECHADO' ? 'secondary' : (t.STATUS === 'ABERTO' ? 'success' : 'warning')}`}>
                                                     {t.STATUS}
                                                 </span>
                                             </td>
-                                            <td>{formatDataStr(t.DATA_CRIACAO)}</td>
+                                            <td className='d-none d-md-table-cell'>{formatDataStr(t.DATA_CRIACAO)}</td>
+                                            <td>{t.NOME_OPERADOR}</td>
                                             <td className='text-center'>
                                                 <Link to={`/app/atendimento/chat/?wa_id=${t.WA_ID}&nome=${t.NOME}&status=${t.STATUS}`} onClick={() => sessionStorage.setItem('ticket', encryptData(t.ID_TICKET))} className="btn btn-sm btn-primary">
                                                     Abrir Conversa
@@ -117,7 +119,7 @@ function TicketsLista() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="6" className="text-center">Nenhum ticket encontrado</td>
+                                        <td colSpan="7" className="text-center">Nenhum ticket encontrado</td>
                                     </tr>
                                 )}
                             </tbody>
