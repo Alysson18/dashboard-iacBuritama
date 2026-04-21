@@ -185,6 +185,39 @@ function TicketChat() {
         return `${hours}:${minutes}`;
     };
 
+    // Converte markdown do WhatsApp em elementos React
+    const formatWhatsAppText = (text) => {
+        if (!text) return null;
+        // Divide por linha para manter quebras
+        const lines = text.split('\n');
+        return lines.map((line, lineIdx) => {
+            const parts = [];
+            // Regex para capturar *bold*, _italic_, ~strike~, `code`
+            const regex = /(\*([^*]+)\*)|(\_([^_]+)\_)|(~([^~]+)~)|(`([^`]+)`)/g;
+            let lastIndex = 0;
+            let match;
+            while ((match = regex.exec(line)) !== null) {
+                // Texto antes do match
+                if (match.index > lastIndex) {
+                    parts.push(line.slice(lastIndex, match.index));
+                }
+                if (match[1]) parts.push(<strong key={match.index}>{match[2]}</strong>);
+                else if (match[3]) parts.push(<em key={match.index}>{match[4]}</em>);
+                else if (match[5]) parts.push(<s key={match.index}>{match[6]}</s>);
+                else if (match[7]) parts.push(<code key={match.index} style={{ background: 'rgba(0,0,0,0.1)', borderRadius: '3px', padding: '0 3px', fontFamily: 'monospace' }}>{match[8]}</code>);
+                lastIndex = regex.lastIndex;
+            }
+            // Texto restante
+            if (lastIndex < line.length) parts.push(line.slice(lastIndex));
+            return (
+                <span key={lineIdx}>
+                    {parts}
+                    {lineIdx < lines.length - 1 && <br />}
+                </span>
+            );
+        });
+    };
+
     const conteudoHtml = (
         <div className='body'>
             <div className={`pt-2 mt-2 w-100`}>
@@ -231,7 +264,7 @@ function TicketChat() {
                             return (
                                 <div key={index} className={`chat-bubble ${msg.REMETENTE === 'CLIENTE' ? 'cliente' : 'operador'}`}>
                                     {displayName && <div className="chat-operator-name">{displayName}</div>}
-                                    <span style={{ whiteSpace: 'pre-wrap' }}>{displayText}</span>
+                                    <span style={{ whiteSpace: 'pre-wrap' }}>{formatWhatsAppText(displayText)}</span>
                                     <span className="chat-time">{formatTime(msg.DATA_ENVIO)}</span>
                                 </div>
                             );
