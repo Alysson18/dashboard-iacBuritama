@@ -24,6 +24,7 @@ function Usuarios() {
         { key: 'RELATORIOS', label: 'Relatórios' },
         { key: 'USUARIOS', label: 'Gestão de Usuários' },
         { key: 'SETORES', label: 'Gestão de Setores' },
+        { key: 'MENUBOT', label: 'Menu do WhatsApp' },
     ];
 
     function encryptData(data) {

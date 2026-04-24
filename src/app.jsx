@@ -18,6 +18,7 @@ import TicketsLista from './app/pages/atendimento/tickets/tickets.jsx';
 import TicketChat from './app/pages/atendimento/chat/chat.jsx';
 import Setores from './app/pages/cadastros/setores/setores.jsx';
 import Usuarios from './app/pages/cadastros/usuarios/usuarios.jsx';
+import MenuBot from './app/pages/cadastros/menuBot/MenuBot.jsx';
 /*Soluções*/
 
 function App() {
@@ -50,6 +51,7 @@ function App() {
       <SecureRoute exact path='/app/atendimento/chat' component={TicketChat} />
       <SecureRoute exact path='/app/cadastros/setores' component={Setores} />
       <SecureRoute exact path='/app/cadastros/usuarios' component={Usuarios} />
+      <SecureRoute exact path='/app/cadastros/menu-bot' component={MenuBot} />
 
       <Route exact path='/*' component={login} />
     </Switch>

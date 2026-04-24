@@ -294,6 +294,10 @@ a[href*="#mensagens"]::before {
     content: "\f07c" !important;
 }
 
+.robot::before {
+    content: url("../../../public/img/robot.png") !important;
+}
+
 /*-------------------------------*/
 /*       Hamburger-Cross         */
 /*-------------------------------*/

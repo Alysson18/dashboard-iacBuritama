@@ -81,11 +81,15 @@ function TicketsLista() {
             socket.off('ticket_transferido', handleNovoTicket);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [pagina, controle, statusFiltro, setorFiltro, operadorFiltro, nomeFiltro]);
+    }, [pagina, controle, statusFiltro, setorFiltro, operadorFiltro]);
 
     const handlePageClick = async (data) => {
         setPagina(data.selected + 1);
     };
+
+    function alterarDescricao(event) {
+        setNomeFiltro(event.target.value)
+    }
 
     const conteudoHtml = (
         <div className='body'>
@@ -102,17 +106,12 @@ function TicketsLista() {
                         </div>
                         <div className='col-md-3'>
                             <label className="fw-bold mb-1 d-block" style={{ fontSize: '0.8rem', color: '#555' }}>Nome do Cliente</label>
-                            <div className="input-group input-group-sm">
-                                <span className="input-group-text bg-white border-end-0">
-                                    <i className="bi bi-search text-muted"></i>
-                                </span>
-                                <input
-                                    type="text"
-                                    className="form-control border-start-0 ps-0"
-                                    placeholder="Buscar..."
-                                    value={nomeFiltro}
-                                    onChange={(e) => { setNomeFiltro(e.target.value); setPagina(1); }}
-                                />
+                            <div className="input-group">
+                                <input type="text" className="form-control"
+                                    onChange={(e) => alterarDescricao(e)}
+                                    placeholder="Digite um Nome para Buscar..." aria-label="Recipient's username"
+                                    aria-describedby="button-addon2"
+                                    onKeyDown={(e) => e.key === "Enter" ? fetchGetList() : null} />
                             </div>
                         </div>
                         <div className='col-md-3'>
@@ -140,78 +139,78 @@ function TicketsLista() {
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div className="row mt-3">
-                    <div className='col-md-12'>
-                        <table className="table table-responsive table-sm table-striped w-100">
-                            <thead>
-                                <tr className="tabela">
-                                    <th className='codigo' scope="col">ID</th>
-                                    <th className='nome' scope="col">Nome</th>
-                                    <th className='nome d-none d-sm-table-cell' scope="col">WhatsApp</th>
-                                    <th className='situacao' scope="col">Status</th>
-                                    <th className='nome d-none d-md-table-cell' scope="col">Setor</th>
-                                    <th className='nome d-none d-md-table-cell' scope="col">Data Criação</th>
-                                    <th className='nome' scope="col">Operador</th>
-                                    <th className='editar ebtn text-center' scope="col">Ação</th>
-                                </tr>
-                            </thead>
-                            <tbody className='text-center'>
-                                {tickets?.length > 0 ? (
-                                    tickets.map((t) => (
-                                        <tr key={t.ID_TICKET}>
-                                            <td>{t.ID_TICKET}</td>
-                                            <td>{t.NOME}</td>
-                                            <td className='d-none d-sm-table-cell'>{t.WA_ID}</td>
-                                            <td>
-                                                <span className={`badge bg-${t.STATUS === 'FECHADO' ? 'secondary' : (t.STATUS === 'ABERTO' ? 'success' : 'warning')}`}>
-                                                    {t.STATUS}
-                                                </span>
-                                            </td>
-                                            <td className='d-none d-md-table-cell'>
-                                                {t.NOME_SETOR ? <span className="badge bg-primary text-white">{t.NOME_SETOR.toUpperCase()}</span> : <span className="text-muted">-</span>}
-                                            </td>
-                                            <td className='d-none d-md-table-cell'>{formatDataStr(t.DATA_CRIACAO)}</td>
-                                            <td>{t.NOME_OPERADOR || <span className="text-warning">Aguardando</span>}</td>
-                                            <td className='text-center'>
-                                                <Link to={`/app/atendimento/chat/?wa_id=${t.WA_ID}&nome=${t.NOME}&status=${t.STATUS}`} onClick={() => sessionStorage.setItem('ticket', encryptData(t.ID_TICKET))} className="btn btn-sm btn-primary">
-                                                    Abrir
-                                                </Link>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan="8" className="text-center">Nenhum ticket encontrado</td>
+            <div className="row mt-3">
+                <div className='col-md-12'>
+                    <table className="table table-responsive table-sm table-striped w-100">
+                        <thead>
+                            <tr className="tabela">
+                                <th className='codigo' scope="col">ID</th>
+                                <th className='nome' scope="col">Nome</th>
+                                <th className='nome d-none d-sm-table-cell' scope="col">WhatsApp</th>
+                                <th className='situacao' scope="col">Status</th>
+                                <th className='nome d-none d-md-table-cell' scope="col">Setor</th>
+                                <th className='nome d-none d-md-table-cell' scope="col">Data Criação</th>
+                                <th className='nome' scope="col">Operador</th>
+                                <th className='editar ebtn text-center' scope="col">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody className='text-center'>
+                            {tickets?.length > 0 ? (
+                                tickets.map((t) => (
+                                    <tr key={t.ID_TICKET}>
+                                        <td>{t.ID_TICKET}</td>
+                                        <td>{t.NOME}</td>
+                                        <td className='d-none d-sm-table-cell'>{t.WA_ID}</td>
+                                        <td>
+                                            <span className={`badge bg-${t.STATUS === 'FECHADO' ? 'secondary' : (t.STATUS === 'ABERTO' ? 'success' : 'warning')}`}>
+                                                {t.STATUS}
+                                            </span>
+                                        </td>
+                                        <td className='d-none d-md-table-cell'>
+                                            {t.NOME_SETOR ? <span className="badge bg-primary text-white">{t.NOME_SETOR.toUpperCase()}</span> : <span className="text-muted">-</span>}
+                                        </td>
+                                        <td className='d-none d-md-table-cell'>{formatDataStr(t.DATA_CRIACAO)}</td>
+                                        <td>{t.NOME_OPERADOR || <span className="text-warning">Aguardando</span>}</td>
+                                        <td className='text-center'>
+                                            <Link to={`/app/atendimento/chat/?wa_id=${t.WA_ID}&nome=${t.NOME}&status=${t.STATUS}`} onClick={() => sessionStorage.setItem('ticket', encryptData(t.ID_TICKET))} className="btn btn-sm btn-primary">
+                                                Abrir
+                                            </Link>
+                                        </td>
                                     </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <ReactPaginate
-                        previousLabel={"<"}
-                        nextLabel={">"}
-                        breakLabel={"..."}
-                        pageCount={pageCount}
-                        marginPagesDisplayed={3}
-                        pageRangeDisplayed={3}
-                        onPageChange={handlePageClick}
-                        containerClassName={"pagination justify-content-center"}
-                        pageClassName={"page-item"}
-                        pageLinkClassName={"page-link"}
-                        previousClassName={"page-item"}
-                        previousLinkClassName={"page-link"}
-                        nextClassName={"page-item"}
-                        nextLinkClassName={"page-link"}
-                        breakClassName={"page-item"}
-                        breakLinkClassName={"page-link"}
-                        activeClassName={"active"}
-                        disableInitialCallback={true}
-                        style={{ outline: 'none' }}
-                    />
-
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="8" className="text-center">Nenhum ticket encontrado</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
                 </div>
+
+                <ReactPaginate
+                    previousLabel={"<"}
+                    nextLabel={">"}
+                    breakLabel={"..."}
+                    pageCount={pageCount}
+                    marginPagesDisplayed={3}
+                    pageRangeDisplayed={3}
+                    onPageChange={handlePageClick}
+                    containerClassName={"pagination justify-content-center"}
+                    pageClassName={"page-item"}
+                    pageLinkClassName={"page-link"}
+                    previousClassName={"page-item"}
+                    previousLinkClassName={"page-link"}
+                    nextClassName={"page-item"}
+                    nextLinkClassName={"page-link"}
+                    breakClassName={"page-item"}
+                    breakLinkClassName={"page-link"}
+                    activeClassName={"active"}
+                    disableInitialCallback={true}
+                    style={{ outline: 'none' }}
+                />
+
             </div>
         </div>
     );
