@@ -16,6 +16,8 @@ import MensagensDisparo from './app/pages/mensagens/disparo/disparo.jsx';
 import MensagensAgendamento from './app/pages/mensagens/agendamento/agendamento.jsx';
 import TicketsLista from './app/pages/atendimento/tickets/tickets.jsx';
 import TicketChat from './app/pages/atendimento/chat/chat.jsx';
+import Setores from './app/pages/cadastros/setores/setores.jsx';
+import Usuarios from './app/pages/cadastros/usuarios/usuarios.jsx';
 /*Soluções*/
 
 function App() {
@@ -46,6 +48,8 @@ function App() {
 
       <SecureRoute exact path='/app/atendimento/tickets' component={TicketsLista} />
       <SecureRoute exact path='/app/atendimento/chat' component={TicketChat} />
+      <SecureRoute exact path='/app/cadastros/setores' component={Setores} />
+      <SecureRoute exact path='/app/cadastros/usuarios' component={Usuarios} />
 
       <Route exact path='/*' component={login} />
     </Switch>

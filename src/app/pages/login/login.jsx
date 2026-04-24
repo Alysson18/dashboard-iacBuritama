@@ -54,6 +54,8 @@ function Login() {
                     sessionStorage.setItem("logado", encryptData("S"));
                     sessionStorage.setItem("nome_usuario", encryptData(AxiosResponse.data.DATA[0].NOME));
                     sessionStorage.setItem("id_usuario", encryptData(AxiosResponse.data.DATA[0].ID));
+                    sessionStorage.setItem("permissoes", encryptData(AxiosResponse.data.DATA[0].PERMISSOES || "[]"));
+                    sessionStorage.setItem("id_setor", encryptData(AxiosResponse.data.DATA[0].ID_SETOR || ""));
                     //sessionStorage.setItem("id_empresa", encryptData(AxiosResponse.data.DATA[0].EMPRESA_PADRAO));
                     setLogado(true);
                     setSucesso('S')
@@ -125,7 +127,7 @@ function Login() {
                     <Link to="/app/esquecisenha" className="mx-3">Esqueci Senha</Link>
                 </div> */}
                 <footer className="mt-5 mb-4 text-white">
-                    <label className='text-white'> Versão: 0.2.9</label> <br />
+                    <label className='text-white'> Versão: 0.3.0</label> <br />
                     &copy;Desenvolvido Por <a href="https://softwareplus.com.br" className="login-links text-white">SoftwarePlus </a></footer>
 
             </form >

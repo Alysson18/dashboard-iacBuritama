@@ -16,12 +16,23 @@ function Menu({ conteudo }) {
 
 
     function encryptData(data) {
-        return CryptoJS.AES.encrypt(data.toString(), 'Alysson-2025-ABAC').toString();
+        return CryptoJS.AES.encrypt(data.toString(), 'Alysson-2025-IACBURITAMA').toString();
     }
 
     function decryptData(encryptedData) {
-        const bytes = CryptoJS.AES.decrypt(encryptedData.toString(), 'Alysson-2025-ABAC');
+        if (!encryptedData) return "";
+        const bytes = CryptoJS.AES.decrypt(encryptedData.toString(), 'Alysson-2025-IACBURITAMA');
         return bytes.toString(CryptoJS.enc.Utf8);
+    }
+
+    function hasPermission(key) {
+        try {
+            const raw = decryptData(sessionStorage.getItem('permissoes'));
+            const perms = JSON.parse(raw || '[]');
+            return perms.includes(key);
+        } catch (e) {
+            return false;
+        }
     }
 
     function Logout() {
@@ -141,7 +152,7 @@ function Menu({ conteudo }) {
         const handleTicketNovo = (payload) => {
             if (payload.REMETENTE === 'CLIENTE') {
                 audio.play().catch(e => console.log("Audio block", e));
-                
+
                 // Se já estiver na conversa, não mostra notificação visual
                 if (isViewingThisTicket(payload.WA_ID)) return;
 
@@ -157,7 +168,7 @@ function Menu({ conteudo }) {
                 // Notifica apenas se eu for o dono do ticket
                 if (payload.ID_OPERADOR && String(payload.ID_OPERADOR) === String(myId)) {
                     audio.play().catch(e => console.log("Audio block", e));
-                    
+
                     // Se já estiver na conversa, não mostra notificação visual
                     if (isViewingThisTicket(payload.WA_ID)) return;
 
@@ -237,45 +248,50 @@ function Menu({ conteudo }) {
                             <img className='mt-2' src='../../../img/logoHorizontalBranca.png' width='93%' />
                         </div>
                     </div>
-                    <li><Link className="nav-link home" to="/app/home">Home</Link></li>
-                    <li className="dropdown">
-                        <a href="#acessosRede" className="dropdown-toggle" data-toggle="dropdown">
-                            Acessos a Rede <span className="caret"></span>
-                        </a>
-                        <ul className="dropdown-menu animated fadeInLeft" role="menu">
-                            <div className="dropdown-header">Cadastros</div>
-                            <li><Link className="nav-link usuario" to="/app/cadastros/pessoas">Cadastro de Acesso</Link></li>
-                            <li><Link className="nav-link evento" to="/app/cadastros/eventos">Cadastro de Eventos</Link></li>
-                            <div className="dropdown-header">Dados</div>
-                            <li><Link className="nav-link grafico" to="/app/acessos/acesso-periodo">Acessos por Periodo</Link></li>
-                            <li><Link className="nav-link grafico" to="/app/acessos/quantidade-acesso">Qtd. Acessos por Pessoas</Link></li>
-                            {/* <li><Link className="nav-link grafico" to="/app/acessos/acesso-pessoa">Acessos por Pessoas</Link></li> */}
-                            <div className="dropdown-header">Sorteio</div>
-                            <li><Link className="nav-link sorteio" to="/app/acessos/sorteio">Sortear</Link></li>
-                        </ul>
-                    </li>
-                    <li className="dropdown">
-                        <a href="#mensagens" className="dropdown-toggle" data-toggle="dropdown">
-                            Mensagens<span className="caret"></span>
-                        </a>
-                        <ul className="dropdown-menu animated fadeInLeft" role="menu">
-                            <div className="dropdown-header">Cadastros</div>
-                            <li><Link className="nav-link email" to="/app/mensagens/cadastro">Cadastrar Mensagens</Link></li>
-                            <div className="dropdown-header">Disparo</div>
-                            <li><Link className="nav-link whatsapp" to="/app/mensagens/disparo">Disparo WhatsApp</Link></li>
-                            <li><Link className="nav-link email" to="/app/mensagens/agendamento">Agendar Disparo</Link></li>
-                        </ul>
-                    </li>
+                    {hasPermission('HOME') && <li><Link className="nav-link home" to="/app/home">Home</Link></li>}
+                    {(hasPermission('PESSOAS') || hasPermission('EVENTOS')) && (
+                        <li className="dropdown">
+                            <a href="#acessosRede" className="dropdown-toggle" data-toggle="dropdown">
+                                Acessos a Rede <span className="caret"></span>
+                            </a>
+                            <ul className="dropdown-menu animated fadeInLeft" role="menu">
+                                <div className="dropdown-header">Cadastros</div>
+                                {hasPermission('PESSOAS') && <li><Link className="nav-link usuario" to="/app/cadastros/pessoas">Cadastro de Acesso</Link></li>}
+                                {hasPermission('EVENTOS') && <li><Link className="nav-link evento" to="/app/cadastros/eventos">Cadastro de Eventos</Link></li>}
+                                <div className="dropdown-header">Dados</div>
+                                <li><Link className="nav-link grafico" to="/app/acessos/acesso-periodo">Acessos por Periodo</Link></li>
+                                <li><Link className="nav-link grafico" to="/app/acessos/quantidade-acesso">Qtd. Acessos por Pessoas</Link></li>
+                                <div className="dropdown-header">Sorteio</div>
+                                <li><Link className="nav-link sorteio" to="/app/acessos/sorteio">Sortear</Link></li>
+                            </ul>
+                        </li>
+                    )}
+                    {hasPermission('MENSAGENS') && (
+                        <li className="dropdown">
+                            <a href="#mensagens" className="dropdown-toggle" data-toggle="dropdown">
+                                Mensagens<span className="caret"></span>
+                            </a>
+                            <ul className="dropdown-menu animated fadeInLeft" role="menu">
+                                <div className="dropdown-header">Cadastros</div>
+                                <li><Link className="nav-link email" to="/app/mensagens/cadastro">Cadastrar Mensagens</Link></li>
+                                <div className="dropdown-header">Disparo</div>
+                                <li><Link className="nav-link whatsapp" to="/app/mensagens/disparo">Disparo WhatsApp</Link></li>
+                                <li><Link className="nav-link email" to="/app/mensagens/agendamento">Agendar Disparo</Link></li>
+                            </ul>
+                        </li>
+                    )}
 
-                    <li className="dropdown">
-                        <a href="#atendimento" className="dropdown-toggle whatsapp" data-toggle="dropdown">
-                            Atendimento<span className="caret"></span>
-                        </a>
-                        <ul className="dropdown-menu animated fadeInLeft" role="menu">
-                            <div className="dropdown-header">Atendimento</div>
-                            <li><Link className="nav-link whatsapp" to="/app/atendimento/tickets">WhatsApp</Link></li>
-                        </ul>
-                    </li>
+                    {hasPermission('ATENDIMENTO') && (
+                        <li className="dropdown">
+                            <a href="#atendimento" className="dropdown-toggle whatsapp" data-toggle="dropdown">
+                                Atendimento<span className="caret"></span>
+                            </a>
+                            <ul className="dropdown-menu animated fadeInLeft" role="menu">
+                                <div className="dropdown-header">Atendimento</div>
+                                <li><Link className="nav-link whatsapp" to="/app/atendimento/tickets">WhatsApp</Link></li>
+                            </ul>
+                        </li>
+                    )}
 
                     <li className="dropdown">
                         <a href="#services" className="dropdown-toggle" data-toggle="dropdown">
@@ -284,6 +300,9 @@ function Menu({ conteudo }) {
                         <ul className="dropdown-menu animated fadeInLeft" role="menu">
                             <div className="dropdown-header">Usuário</div>
                             <li><Link className="nav-link key" data-bs-toggle="modal" data-bs-target="#alterarSenhaModal">Alterar Senha</Link></li>
+                            {(hasPermission('USUARIOS') || hasPermission('SETORES')) && <div className="dropdown-header">Administração</div>}
+                            {hasPermission('USUARIOS') && <li><Link className="nav-link usuario" to="/app/cadastros/usuarios">Gestão de Usuários</Link></li>}
+                            {hasPermission('SETORES') && <li><Link className="nav-link setor" to="/app/cadastros/setores">Gestão de Setores</Link></li>}
                         </ul>
                     </li>
                     <li className='mb-5'><Link className="nav-link logout" to="/" onClick={() => Logout()}>Logout</Link></li>

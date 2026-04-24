@@ -12,7 +12,12 @@ import './tickets.css';
 
 function TicketsLista() {
     const [tickets, setTickets] = useState([]);
+    const [setores, setSetores] = useState([]);
+    const [operadores, setOperadores] = useState([]);
     const [statusFiltro, setStatusFiltro] = useState('T');
+    const [setorFiltro, setSetorFiltro] = useState('');
+    const [operadorFiltro, setOperadorFiltro] = useState('');
+    const [nomeFiltro, setNomeFiltro] = useState('');
     const [pagina, setPagina] = useState(1);
     const [pageCount, setpageCount] = useState(1);
     const [controle, setControle] = useState(0);
@@ -31,21 +36,36 @@ function TicketsLista() {
         Loading.show("Aguarde....");
         try {
             let url = `/tickets?status=${statusFiltro}&page=${pagina}&pageSize=6`;
+            if (setorFiltro) url += `&id_setor=${setorFiltro}`;
+            if (operadorFiltro) url += `&id_operador=${operadorFiltro}`;
+            if (nomeFiltro) url += `&nome=${nomeFiltro}`;
+
             const res = await api.get(url);
 
-            if (res.data.DATA && res.data.DATA.length > 0) {
+            if (res.data.DATA) {
                 setTickets(res.data.DATA);
-                setpageCount(Number(res.data.TOTAL_PAGES));
+                setpageCount(Number(res.data.TOTAL_PAGES) || 1);
             } else {
                 setTickets([]);
                 setpageCount(1);
             }
         } catch (error) {
-            toastr.error(error.message || error, "Erro ao buscar tickets");
+            toastr.error("Erro ao buscar tickets");
         } finally {
             Loading.hide();
         }
     };
+
+    useEffect(() => {
+        const fetchAux = async () => {
+            try {
+                const [resS, resO] = await Promise.all([api.get('/setores'), api.get('/usuarios/lista')]);
+                if (resS.data.SUCCESS) setSetores(resS.data.DATA);
+                if (resO.data.SUCCESS) setOperadores(resO.data.DATA);
+            } catch (e) { console.error(e); }
+        };
+        fetchAux();
+    }, []);
 
     useEffect(() => {
         fetchGetList();
@@ -55,10 +75,13 @@ function TicketsLista() {
         };
 
         socket.on('ticket_novo', handleNovoTicket);
+        socket.on('ticket_transferido', handleNovoTicket);
         return () => {
             socket.off('ticket_novo', handleNovoTicket);
+            socket.off('ticket_transferido', handleNovoTicket);
         };
-    }, [pagina, controle, statusFiltro]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pagina, controle, statusFiltro, setorFiltro, operadorFiltro, nomeFiltro]);
 
     const handlePageClick = async (data) => {
         setPagina(data.selected + 1);
@@ -70,18 +93,54 @@ function TicketsLista() {
                 <div className='text-center'>
                     <h3 className='tituloD mb-1'>Fila de Atendimento</h3>
                 </div>
-                <div className="row mt-4">
-                    <div className='col-md-3 mt-1 offset-md-9'>
-                        <div className="input-group">
-                            <select className="form-select" value={statusFiltro} onChange={(e) => setStatusFiltro(e.target.value)}>
-                                <option value="T">Todos</option>
-                                <option value="ABERTO">Aberto</option>
-                                <option value="EM_ANDAMENTO">Em Andamento</option>
-                                <option value="FECHADO">Fechado</option>
+
+                <div className="card shadow-sm border-0 mb-4 p-3" style={{ borderRadius: '15px', background: '#fcfcfc' }}>
+                    <div className="row align-items-end g-3 px-2">
+                        <div className="col-12 mb-2 border-bottom pb-2 d-flex align-items-center">
+                            <i className="bi bi-funnel-fill text-primary me-2"></i>
+                            <h6 className="m-0 fw-bold text-dark">Filtros de Pesquisa</h6>
+                        </div>
+                        <div className='col-md-3'>
+                            <label className="fw-bold mb-1 d-block" style={{ fontSize: '0.8rem', color: '#555' }}>Nome do Cliente</label>
+                            <div className="input-group input-group-sm">
+                                <span className="input-group-text bg-white border-end-0">
+                                    <i className="bi bi-search text-muted"></i>
+                                </span>
+                                <input
+                                    type="text"
+                                    className="form-control border-start-0 ps-0"
+                                    placeholder="Buscar..."
+                                    value={nomeFiltro}
+                                    onChange={(e) => { setNomeFiltro(e.target.value); setPagina(1); }}
+                                />
+                            </div>
+                        </div>
+                        <div className='col-md-3'>
+                            <label className="fw-bold mb-1 d-block" style={{ fontSize: '0.8rem', color: '#555' }}>Departamento</label>
+                            <select className="form-select form-select-sm" value={setorFiltro} onChange={(e) => { setSetorFiltro(e.target.value); setPagina(1); }}>
+                                <option value="">Todos os Setores</option>
+                                {setores.map(s => <option key={s.ID_SETOR} value={s.ID_SETOR}>{s.NOME}</option>)}
+                            </select>
+                        </div>
+                        <div className='col-md-3'>
+                            <label className="fw-bold mb-1 d-block" style={{ fontSize: '0.8rem', color: '#555' }}>Atendente</label>
+                            <select className="form-select form-select-sm" value={operadorFiltro} onChange={(e) => { setOperadorFiltro(e.target.value); setPagina(1); }}>
+                                <option value="">Todos os Atendentes</option>
+                                {operadores.map(o => <option key={o.ID} value={o.ID}>{o.NOME}</option>)}
+                            </select>
+                        </div>
+                        <div className='col-md-3'>
+                            <label className="fw-bold mb-1 d-block" style={{ fontSize: '0.8rem', color: '#555' }}>Situação / Status</label>
+                            <select className="form-select form-select-sm" value={statusFiltro} onChange={(e) => { setStatusFiltro(e.target.value); setPagina(1); }}>
+                                <option value="T">Todas as Situações</option>
+                                <option value="ABERTO">🔓 Aberto</option>
+                                <option value="EM_ANDAMENTO">⏳ Em Andamento</option>
+                                <option value="FECHADO">✅ Fechado</option>
                             </select>
                         </div>
                     </div>
                 </div>
+
                 <div className="row mt-3">
                     <div className='col-md-12'>
                         <table className="table table-responsive table-sm table-striped w-100">
@@ -91,6 +150,7 @@ function TicketsLista() {
                                     <th className='nome' scope="col">Nome</th>
                                     <th className='nome d-none d-sm-table-cell' scope="col">WhatsApp</th>
                                     <th className='situacao' scope="col">Status</th>
+                                    <th className='nome d-none d-md-table-cell' scope="col">Setor</th>
                                     <th className='nome d-none d-md-table-cell' scope="col">Data Criação</th>
                                     <th className='nome' scope="col">Operador</th>
                                     <th className='editar ebtn text-center' scope="col">Ação</th>
@@ -108,18 +168,21 @@ function TicketsLista() {
                                                     {t.STATUS}
                                                 </span>
                                             </td>
+                                            <td className='d-none d-md-table-cell'>
+                                                {t.NOME_SETOR ? <span className="badge bg-primary text-white">{t.NOME_SETOR.toUpperCase()}</span> : <span className="text-muted">-</span>}
+                                            </td>
                                             <td className='d-none d-md-table-cell'>{formatDataStr(t.DATA_CRIACAO)}</td>
-                                            <td>{t.NOME_OPERADOR}</td>
+                                            <td>{t.NOME_OPERADOR || <span className="text-warning">Aguardando</span>}</td>
                                             <td className='text-center'>
                                                 <Link to={`/app/atendimento/chat/?wa_id=${t.WA_ID}&nome=${t.NOME}&status=${t.STATUS}`} onClick={() => sessionStorage.setItem('ticket', encryptData(t.ID_TICKET))} className="btn btn-sm btn-primary">
-                                                    Abrir Conversa
+                                                    Abrir
                                                 </Link>
                                             </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="7" className="text-center">Nenhum ticket encontrado</td>
+                                        <td colSpan="8" className="text-center">Nenhum ticket encontrado</td>
                                     </tr>
                                 )}
                             </tbody>

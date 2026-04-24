@@ -1,3 +1,40 @@
 .ebtn {
     width: 190px !important;
 }
+
+.filtros-container {
+    background: #fdfdfd;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.titulo-filtros {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #000000;
+    display: flex;
+    align-items: center;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 8px;
+}
+
+.titulo-filtros i {
+    font-size: 1.2rem;
+    color: #000000;
+}
+
+
+.form-select,
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    font-size: 0.9rem;
+}
+
+.form-select:focus,
+.form-control:focus {
+    border-color: #646464;
+    box-shadow: 0 0 0 0.2rem rgba(100, 100, 100, 0.15);
+}

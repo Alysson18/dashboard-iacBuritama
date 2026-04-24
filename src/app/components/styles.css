@@ -286,6 +286,14 @@ a[href*="#mensagens"]::before {
     content: "\f0e0" !important;
 }
 
+.key::before {
+    content: "\f084" !important;
+}
+
+.setor::before {
+    content: "\f07c" !important;
+}
+
 /*-------------------------------*/
 /*       Hamburger-Cross         */
 /*-------------------------------*/
