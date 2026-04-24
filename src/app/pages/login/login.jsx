@@ -127,7 +127,7 @@ function Login() {
                     <Link to="/app/esquecisenha" className="mx-3">Esqueci Senha</Link>
                 </div> */}
                 <footer className="mt-5 mb-4 text-white">
-                    <label className='text-white'> Versão: 0.3.0</label> <br />
+                    <label className='text-white'> Versão: 0.3.1</label> <br />
                     &copy;Desenvolvido Por <a href="https://softwareplus.com.br" className="login-links text-white">SoftwarePlus </a></footer>
 
             </form >
