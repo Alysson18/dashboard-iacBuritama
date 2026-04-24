@@ -64,9 +64,18 @@ function App() {
     }
   }
 
+  function LoginRoute({ ...params }) {
+    if (logado) {
+      return <Redirect to='/app/home' />
+    }
+    else {
+      return <Route {...params} />
+    }
+  }
+
   return <BrowserRouter>
     <Switch>
-      <Route exact path='/' component={login} />
+      <LoginRoute exact path='/' component={login} />
       <SecureRoute exact path='/app/home' component={home} />
       <SecureRoute exact path='/app/cadastros/pessoas' component={Pessoas} />
       <SecureRoute exact path='/app/cadastros/eventos' component={Eventos} />
@@ -83,7 +92,7 @@ function App() {
       <SecureRoute exact path='/app/cadastros/usuarios' component={Usuarios} />
       <SecureRoute exact path='/app/cadastros/menu-bot' component={MenuBot} />
 
-      <Route exact path='/*' component={login} />
+      <LoginRoute exact path='/*' component={login} />
     </Switch>
   </BrowserRouter>;
 }
