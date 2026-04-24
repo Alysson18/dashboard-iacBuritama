@@ -33,6 +33,7 @@ function Login() {
 
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
+    const [manterConectado, setManterConectado] = useState(false);
     const [Sucesso, setSucesso] = useState('Nulo');
     const { setLogado } = useContext(AuthContext);
     const senhaHash = md5(senha)
@@ -49,13 +50,29 @@ function Login() {
         }
         else {
             Loading.show('Efetuando Login...')
-            api.post("/login", { "USUARIO": email, "SENHA": senhaHash }).then(function (AxiosResponse) {
+            api.post("/login", { "USUARIO": email, "SENHA": md5(senha) }).then(function (AxiosResponse) {
                 if (AxiosResponse.data.SUCCESS === true) {
-                    sessionStorage.setItem("logado", encryptData("S"));
-                    sessionStorage.setItem("nome_usuario", encryptData(AxiosResponse.data.DATA[0].NOME));
-                    sessionStorage.setItem("id_usuario", encryptData(AxiosResponse.data.DATA[0].ID));
-                    sessionStorage.setItem("permissoes", encryptData(AxiosResponse.data.DATA[0].PERMISSOES || "[]"));
-                    sessionStorage.setItem("id_setor", encryptData(AxiosResponse.data.DATA[0].ID_SETOR || ""));
+                    const dados = {
+                        logado: encryptData("S"),
+                        nome_usuario: encryptData(AxiosResponse.data.DATA[0].NOME),
+                        id_usuario: encryptData(AxiosResponse.data.DATA[0].ID),
+                        permissoes: encryptData(AxiosResponse.data.DATA[0].PERMISSOES || "[]"),
+                        id_setor: encryptData(AxiosResponse.data.DATA[0].ID_SETOR || "")
+                    };
+
+                    // Salva no sessionStorage (padrão atual)
+                    Object.keys(dados).forEach(key => sessionStorage.setItem(key, dados[key]));
+
+                    // Se marcar o checkbox, salva no localStorage com expiração
+                    if (manterConectado) {
+                        const DIAS_EXPIRACAO = 3; // <--- ALTERE AQUI O TEMPO DE DURAÇÃO
+                        const tempoMilissegundos = DIAS_EXPIRACAO * 24 * 60 * 60 * 1000;
+                        const dataExpiracao = new Date().getTime() + tempoMilissegundos;
+
+                        localStorage.setItem("expiracao", encryptData(dataExpiracao.toString()));
+                        Object.keys(dados).forEach(key => localStorage.setItem(key, dados[key]));
+                    }
+
                     //sessionStorage.setItem("id_empresa", encryptData(AxiosResponse.data.DATA[0].EMPRESA_PADRAO));
                     setLogado(true);
                     setSucesso('S')
@@ -118,6 +135,19 @@ function Login() {
                     <label htmlFor="floatingPassword">Senha</label>
                 </div>
 
+                <div className="form-check text-start mt-2 ms-1">
+                    <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id="checkManter"
+                        checked={manterConectado}
+                        onChange={(e) => setManterConectado(e.target.checked)}
+                    />
+                    <label className="form-check-label text-white" htmlFor="checkManter">
+                        Mantenha-me conectado
+                    </label>
+                </div>
+
                 <button on onClick={() => { LoginUsuario() }} className="btnLogin w-100 btn btn-lg mt-3" type="button">Acessar</button>
                 {
                     Sucesso === 'S' ? <Redirect to='/app/home' /> : null
@@ -137,4 +167,3 @@ function Login() {
 
 }
 export default Login;
-

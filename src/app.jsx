@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
 import { AuthContext } from './app/Context/auth.jsx';
+import CryptoJS from 'crypto-js';
 
 /* Paginas */
 import login from './app/pages/login/login.jsx';
@@ -20,6 +21,35 @@ import Setores from './app/pages/cadastros/setores/setores.jsx';
 import Usuarios from './app/pages/cadastros/usuarios/usuarios.jsx';
 import MenuBot from './app/pages/cadastros/menuBot/MenuBot.jsx';
 /*Soluções*/
+
+function decryptData(encryptedData) {
+  if (!encryptedData) return "";
+  try {
+    const bytes = CryptoJS.AES.decrypt(encryptedData.toString(), 'Alysson-2025-IACBURITAMA');
+    return bytes.toString(CryptoJS.enc.Utf8);
+  } catch (e) {
+    return "";
+  }
+}
+
+// Lógica para restaurar sessão do "Mantenha-me conectado"
+const expiracaoCripto = localStorage.getItem('expiracao');
+if (expiracaoCripto) {
+  const expiracaoRaw = decryptData(expiracaoCripto);
+  if (expiracaoRaw && new Date().getTime() < parseInt(expiracaoRaw)) {
+    // Sessão ainda é válida, restaura para o sessionStorage se estiver vazio
+    if (!sessionStorage.getItem('logado')) {
+      const chaves = ['logado', 'nome_usuario', 'id_usuario', 'permissoes', 'id_setor'];
+      chaves.forEach(key => {
+        const valor = localStorage.getItem(key);
+        if (valor) sessionStorage.setItem(key, valor);
+      });
+    }
+  } else {
+    // Expirou, limpa o localStorage
+    localStorage.clear();
+  }
+}
 
 function App() {
   const { logado } = useContext(AuthContext);
@@ -59,4 +89,3 @@ function App() {
 }
 
 export default App;
-
