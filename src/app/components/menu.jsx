@@ -9,6 +9,7 @@ import 'toastr/build/toastr.min.css';
 import md5 from 'md5';
 import PlanejamentoGastos from '../pages/relatorios/extratoMensalLista/extratoLista.jsx';
 import { socket } from '../config/socket.js';
+import { Redirect } from 'react-router-dom/cjs/react-router-dom.min.js';
 
 
 function Menu({ conteudo }) {
@@ -38,6 +39,7 @@ function Menu({ conteudo }) {
     function Logout() {
         sessionStorage.clear();
         localStorage.clear();
+        window.location.href = '/';
     }
 
 

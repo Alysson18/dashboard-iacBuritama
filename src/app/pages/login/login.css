@@ -71,6 +71,11 @@
     color: #fff;
 }
 
+.btnLogin:active {
+    background-color: #363636 !important;
+    color: #fff !important;
+}
+
 .form-control:focus {
     border-color: #000000;
     box-shadow: 0 3px #000000 !important;
