@@ -20,6 +20,7 @@ import TicketChat from './app/pages/atendimento/chat/chat.jsx';
 import Setores from './app/pages/cadastros/setores/setores.jsx';
 import Usuarios from './app/pages/cadastros/usuarios/usuarios.jsx';
 import MenuBot from './app/pages/cadastros/menuBot/MenuBot.jsx';
+import ConfigHorarios from './app/pages/config/ConfigHorarios.jsx';
 /*Soluções*/
 
 function decryptData(encryptedData) {
@@ -91,6 +92,7 @@ function App() {
       <SecureRoute exact path='/app/cadastros/setores' component={Setores} />
       <SecureRoute exact path='/app/cadastros/usuarios' component={Usuarios} />
       <SecureRoute exact path='/app/cadastros/menu-bot' component={MenuBot} />
+      <SecureRoute exact path='/app/configuracoes/horarios' component={ConfigHorarios} />
 
       <LoginRoute exact path='/*' component={login} />
     </Switch>

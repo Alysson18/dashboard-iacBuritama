@@ -38,7 +38,6 @@ function Menu({ conteudo }) {
     function Logout() {
         sessionStorage.clear();
         localStorage.clear();
-
     }
 
 
@@ -134,7 +133,7 @@ function Menu({ conteudo }) {
         const showNotification = (title, body, payload) => {
             if ("Notification" in window && Notification.permission === "granted") {
                 try {
-                    const notification = new Notification(title, { body, icon: '/img/logoHorizontalBranca.png' });
+                    const notification = new Notification(title, { body, icon: '/img/logoBranca.png' });
                     notification.onclick = () => {
                         window.focus();
                         const encryptedId = CryptoJS.AES.encrypt(payload.ID_TICKET.toString(), 'Alysson-2025-IACBURITAMA').toString();
@@ -303,8 +302,8 @@ function Menu({ conteudo }) {
                             {(hasPermission('USUARIOS') || hasPermission('SETORES')) && <div className="dropdown-header">Administração</div>}
                             {hasPermission('USUARIOS') && <li><Link className="nav-link usuario" to="/app/cadastros/usuarios">Gestão de Usuários</Link></li>}
                             {hasPermission('SETORES') && <li><Link className="nav-link setor" to="/app/cadastros/setores">Gestão de Setores</Link></li>}
-                            {hasPermission('MENUBOT') && <li><Link className="nav-link robot" to="/app/cadastros/menu-bot">Menu do Bot</Link></li>}
-
+                            {hasPermission('MENUBOT') && <li><Link className="nav-link robot" to="/app/cadastros/menu-bot">Menu do WhatsApp</Link></li>}
+                            {hasPermission('HORARIOS') && <li><Link className="nav-link horarios" to="/app/configuracoes/horarios">Horários de Atendimento</Link></li>}
                         </ul>
                     </li>
                     <li className='mb-5'><Link className="nav-link logout" to="/" onClick={() => Logout()}>Logout</Link></li>

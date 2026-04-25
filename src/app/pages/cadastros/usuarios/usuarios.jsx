@@ -25,6 +25,7 @@ function Usuarios() {
         { key: 'USUARIOS', label: 'Gestão de Usuários' },
         { key: 'SETORES', label: 'Gestão de Setores' },
         { key: 'MENUBOT', label: 'Menu do WhatsApp' },
+        { key: 'HORARIOS', label: 'Horários de Atendimento' },
     ];
 
     function encryptData(data) {

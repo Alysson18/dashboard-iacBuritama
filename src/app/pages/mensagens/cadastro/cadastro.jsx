@@ -18,6 +18,7 @@ function MensagensCadastro() {
     // 1. Estados para os campos do formulário (Adapta se já os tiveres noutro lugar)
     const [tipo, setTipo] = useState('MARKETING');
     const [nomeTemplate, setNomeTemplate] = useState('');
+    const [movimentacao, setMovimentacao] = useState('C');
 
     // 2. Estados para o nosso Editor e Variáveis
     const [variaveis, setVariaveis] = useState([]); // Guarda a lista de variáveis: ['{{1}}', '{{2}}']
@@ -112,111 +113,74 @@ function MensagensCadastro() {
     }
 
     function Alterar() {
-        if (document.getElementById('inputNomeCompleto').value !== '' ||
-            document.getElementById('inputTelefone').value !== '' ||
-            document.getElementById('inputMAC').value !== '') {
-            Loading.show('Aguarde...')
-            api.put(`/cadastro`, {
-                NOME: document.getElementById('inputNomeCompleto').value,
-                TELEFONE: document.getElementById('inputTelefone').value,
-                MAC: document.getElementById('inputMAC').value,
-                MEMBRO: document.getElementById('inputMembro').value,
-                SITUACAO: document.getElementById('inputSituacao').value,
-                ID_PESSOA: decryptData(sessionStorage.getItem('id_pessoa'))
-            }).then(function (AxiosResponse) {
-                Loading.hide();
-                if (AxiosResponse.data.SUCCESS === true) {
-                    toastr.success("Cadastro alterado com sucesso", "Sucesso");
-                    window.$('#modalCadastro').modal('hide');
-                    setControle(controle + 1);
-                    LimparCampos();
-                }
-                else {
-                    toastr.error(AxiosResponse.data.MESSAGE, "Atenção");
-                }
-
-            }).catch(function (error) {
-                Loading.hide();
-                toastr.error(error, "Erro ao cadastrar dados!")
-            });
-        } else {
-            toastr.warning('Todos os campos devem ser prenchidos', "Erro ao cadastrar dados!");
-        }
-
+        // Nota: Atualmente seu server.ts não possui rota PUT para templates.
+        // Caso adicione, o padrão seria este:
+        toastr.info("Edição de templates aprovados deve ser feita via Meta Business Suite.", "Informação");
     }
 
-    function Deletar(id_pessoa) {
+    function Deletar(id) {
+        if (!window.confirm("Deseja realmente excluir este template?")) return;
         Loading.show('Aguarde...')
-        api.delete(`/delete/cadastro/${id_pessoa}`).then(function (AxiosResponse) {
+        api.delete(`/templates/${id}`).then(function (AxiosResponse) {
             Loading.hide();
             if (AxiosResponse.data.SUCCESS === true) {
-                toastr.success("Cadastro deletado com sucesso", "Sucesso");
+                toastr.success("Template deletado com sucesso", "Sucesso");
                 setControle(controle + 1);
             }
             else {
                 toastr.error(AxiosResponse.data.MESSAGE, "Atenção");
             }
-
-        }).catch(function (error) {
+        }).catch(function () {
             Loading.hide();
-            toastr.error(error, "Erro ao cadastrar dados!")
+            toastr.error("Erro ao excluir template.");
         });
-
     }
 
     function Inserir() {
-        if (document.getElementById('inputNomeTemplate').value !== '' ||
-            document.getElementById('inputTipo').value !== '' ||
-            document.getElementById('inputDescricaoTemplate').value !== '') {
-            Loading.show('Aguarde...')
-            api.post(`/cadastro`, {
-                NOME: document.getElementById('inputNomeTemplate').value,
-                TELEFONE: document.getElementById('inputTipo').value,
-                MAC: document.getElementById('inputDescricaoTemplate').value,
-                ACEITOU_TERMOS: "S",
-                MEMBRO: document.getElementById('inputMAC').value
-            }).then(function (AxiosResponse) {
-                Loading.hide();
-                if (AxiosResponse.data.SUCCESS === true) {
-                    toastr.success("Cadastro realizado com sucesso", "Sucesso");
-                    window.$('#modalCadastro').modal('hide');
-                    setControle(controle + 1);
-                    LimparCampos();
-                }
-                else {
-                    toastr.error(AxiosResponse.data.MESSAGE, "Atenção");
-                }
-
-            }).catch(function (error) {
-                Loading.hide();
-                toastr.error(error, "Erro ao cadastrar dados!")
-            });
-        } else {
-            toastr.warning('Todos os campos devem ser prenchidos', "Erro ao cadastrar dados!");
+        if (!nomeTemplate || !tipo || !conteudoDaMensagem || !descricao) {
+            return toastr.warning('Todos os campos devem ser preenchidos', "Atenção");
         }
 
+        Loading.show('Aguarde...')
+        api.post(`/templates`, {
+            DESCRICAO: descricao,
+            NOME_MODELO: nomeTemplate,
+            CATEGORIA: tipo,
+            TEXTO_CONTEUDO: conteudoDaMensagem
+        }).then(function (AxiosResponse) {
+            Loading.hide();
+            if (AxiosResponse.data.SUCCESS === true) {
+                toastr.success("Template cadastrado e enviado para análise da Meta", "Sucesso");
+                window.$('#modalCadastro').modal('hide');
+                setControle(c => c + 1);
+                LimparCampos();
+            }
+            else {
+                toastr.error(AxiosResponse.data.MESSAGE, "Atenção");
+            }
+        }).catch(function () {
+            Loading.hide();
+            toastr.error("Erro ao cadastrar template!");
+        });
     }
 
     function SalvarCadastro() {
-        if (sessionStorage.getItem('Movimentacao') === 'C') {
+        if (movimentacao === 'C') {
             Inserir();
-            sessionStorage.removeItem('Movimentacao')
         }
         else {
             Alterar();
-            sessionStorage.removeItem('Movimentacao')
         }
-
     }
 
     function LimparCampos() {
-        document.getElementById('inputDescricaoTemplate').value = '';
-        document.getElementById('inputNomeTemplate').value = '';
+        setDescricao('');
+        setNomeTemplate('');
         setConteudoDaMensagem('');
         setExemplos({});
+        setTipo('MARKETING');
         sessionStorage.removeItem('id_template');
     }
-
 
     const conteudoHtml = (
         <div className='body'>
@@ -236,9 +200,9 @@ function MensagensCadastro() {
                     </div>
                     <div className='col-md-3 mt-1'>
                         <button onClick={() => {
-                            window.$('#modalCadastro').modal('show');
-                            sessionStorage.setItem('Movimentacao', 'C');
+                            setMovimentacao('C');
                             LimparCampos();
+                            window.$('#modalCadastro').modal('show');
                         }}
                             className="btn btn-secondary float-end w-100" type="button">Nova Mensagem</button>
                     </div>
@@ -267,24 +231,24 @@ function MensagensCadastro() {
                                                 <td>{CC.TIPO}</td>
                                                 <td>{CC.NOME_MODELO}</td>
                                                 <td>{CC.SITUACAO}</td>
-                                                <td onClick={() => {
-                                                    // Deletar(CC.ID_PESSOA)
-                                                }} className='text-center'>
+                                                <td className='text-center'>
                                                     <img src="../../img/delete.png"
-                                                        alt="delete" width="25"
-                                                        className="fas mouse fa-edit icone-acao"></img>
+                                                        alt="delete" width="22"
+                                                        className="fas mouse fa-edit icone-acao"
+                                                        onClick={() => Deletar(CC.ID_TEMPLATE)}></img>
                                                 </td>
-                                                <td onClick={() => {
-                                                    document.getElementById('inputNomeEvento').value = CC.NOME_EVENTO;
-                                                    document.getElementById('inputDataEvento').value = CC.DATA_GRID;
-                                                    document.getElementById('inputHoraEvento').value = CC.HORA;
-                                                    document.getElementById('inputTemplate').value = CC.TEMPLATE_WHATSAPP;
-                                                    sessionStorage.setItem('id_eventos', encryptData(CC.ID_EVENTOS))
-                                                    window.$('#modalCadastro').modal('show');
-                                                }} className='text-center'>
+                                                <td className='text-center'>
                                                     <img src="../../img/editar.png"
-                                                        alt="edit" width="25"
-                                                        className="fas mouse fa-edit icone-acao"></img>
+                                                        alt="edit" width="22"
+                                                        className="fas mouse fa-edit icone-acao"
+                                                        onClick={() => {
+                                                            setMovimentacao('A');
+                                                            setDescricao(CC.DESCRICAO);
+                                                            setNomeTemplate(CC.NOME_MODELO);
+                                                            setTipo(CC.TIPO);
+                                                            setConteudoDaMensagem(CC.CONTEUDO || '');
+                                                            window.$('#modalCadastro').modal('show');
+                                                        }}></img>
                                                 </td>
                                             </tr>
                                         ))
@@ -330,7 +294,7 @@ function MensagensCadastro() {
 
                             <div className="modal-header bg-light">
                                 <h5 className="modal-title tituloC text-primary fw-bold" id="TituloModalLongoExemplo">
-                                    <i className="bi bi-whatsapp me-2"></i> Cadastro Template Mensagem
+                                    <i className="bi bi-whatsapp me-2"></i> {movimentacao === 'C' ? 'Novo Template' : 'Editar Template'}
                                 </h5>
                                 <button onClick={LimparCampos} type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
@@ -370,7 +334,7 @@ function MensagensCadastro() {
                                             <b className="labelDescC">Nome Template (Na Meta)</b>
                                             <input
                                                 type="text"
-                                                id='inputNomeTemplate'
+                                                disabled={movimentacao === 'A'}
                                                 className="form-control form-control-sm"
                                                 placeholder="Ex: aviso_culto_domingo (usar minúsculas e underline)"
                                                 value={nomeTemplate}
@@ -435,7 +399,7 @@ function MensagensCadastro() {
                                     Cancelar
                                 </button>
                                 <button
-                                    onClick={() => { SalvarCadastro(); window.$('#modalCadastro').modal('hide'); }}
+                                    onClick={() => { SalvarCadastro(); }}
                                     type="button"
                                     className="btn btn-success px-4 fw-bold"
                                 >

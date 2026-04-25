@@ -298,6 +298,10 @@ a[href*="#mensagens"]::before {
     content: url("../../../public/img/robot.png") !important;
 }
 
+.horarios::before {
+    content: "\f017" !important;
+}
+
 /*-------------------------------*/
 /*       Hamburger-Cross         */
 /*-------------------------------*/

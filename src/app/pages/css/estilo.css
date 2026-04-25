@@ -138,3 +138,11 @@
 .labelDescC {
     color: black;
 }
+
+.inicio-grid {
+    border-top-left-radius: 15px !important;
+}
+
+.fim-grid {
+    border-top-right-radius: 15px !important;
+}
