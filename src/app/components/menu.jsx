@@ -96,6 +96,7 @@ function Menu({ conteudo }) {
 
     // Global Notification effect
     useEffect(() => {
+        socket.connect();
         const audio = new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg ");
 
         // Request notification permission
@@ -188,6 +189,7 @@ function Menu({ conteudo }) {
         return () => {
             socket.off('ticket_novo', handleTicketNovo);
             socket.off('conversa_ticket', handleConversaTicket);
+            socket.disconnect();
             if (wakeLock !== null) {
                 wakeLock.release().then(() => { wakeLock = null; });
             }
