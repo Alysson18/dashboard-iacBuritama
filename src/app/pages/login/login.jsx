@@ -118,7 +118,7 @@ function Login() {
     }
 
     return <div className="d-flex align-items-center text-center form-container">
-        <div className="card form-signin colorCard">
+        <div className="card card-login form-signin colorCard">
             <form className="form-signin">
                 <img className="mb-3 mt-3" src="../../img/logoHorizontalBranca.png" alt="" width="300" />
                 <h1 className="h3 mb-3 fw-normal text-white">Login</h1>
@@ -157,7 +157,7 @@ function Login() {
                     <Link to="/app/esquecisenha" className="mx-3">Esqueci Senha</Link>
                 </div> */}
                 <footer className="mt-5 mb-4 text-white">
-                    <label className='text-white'> Versão: 0.3.2</label> <br />
+                    <label className='text-white'> Versão: 0.3.4</label> <br />
                     &copy;Desenvolvido Por <a href="https://softwareplus.com.br" className="login-links text-white">SoftwarePlus </a></footer>
 
             </form >

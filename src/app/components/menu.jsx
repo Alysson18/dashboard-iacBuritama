@@ -278,6 +278,12 @@ function Menu({ conteudo }) {
                                 <div className="dropdown-header">Disparo</div>
                                 <li><Link className="nav-link whatsapp" to="/app/mensagens/disparo">Disparo WhatsApp</Link></li>
                                 <li><Link className="nav-link email" to="/app/mensagens/agendamento">Agendar Disparo</Link></li>
+                                {hasPermission('META_ANALYTICS') && (
+                                    <>
+                                        <div className="dropdown-header">Analytics</div>
+                                        <li><Link className="nav-link grafico" to="/app/dados/meta-analytics">Estatísticas Meta</Link></li>
+                                    </>
+                                )}
                             </ul>
                         </li>
                     )}

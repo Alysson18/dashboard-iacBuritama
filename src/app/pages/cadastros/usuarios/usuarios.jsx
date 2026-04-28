@@ -21,6 +21,7 @@ function Usuarios() {
         { key: 'PESSOAS', label: 'Membros/Visitantes' },
         { key: 'EVENTOS', label: 'Eventos' },
         { key: 'MENSAGENS', label: 'Modelos de Mensagem' },
+        { key: 'META_ANALYTICS', label: 'Estatísticas Meta' },
         { key: 'RELATORIOS', label: 'Relatórios' },
         { key: 'USUARIOS', label: 'Gestão de Usuários' },
         { key: 'SETORES', label: 'Gestão de Setores' },
