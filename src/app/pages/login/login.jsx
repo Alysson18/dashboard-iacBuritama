@@ -57,7 +57,8 @@ function Login() {
                         nome_usuario: encryptData(AxiosResponse.data.DATA[0].NOME),
                         id_usuario: encryptData(AxiosResponse.data.DATA[0].ID),
                         permissoes: encryptData(AxiosResponse.data.DATA[0].PERMISSOES || "[]"),
-                        id_setor: encryptData(AxiosResponse.data.DATA[0].ID_SETOR || "")
+                        id_setor: encryptData(AxiosResponse.data.DATA[0].ID_SETOR || ""),
+                        token: encryptData(AxiosResponse.data.TOKEN)
                     };
 
                     // Salva no sessionStorage (padrão atual)
