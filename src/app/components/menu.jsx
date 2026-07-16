@@ -248,7 +248,7 @@ function Menu({ conteudo }) {
                 <ul className="nav sidebar-nav">
                     <div className="sidebar-header">
                         <div className="sidebar-brand">
-                            <img className='mt-2' src='../../../img/logoHorizontalBranca.png' width='93%' />
+                            <img className='mt-2' src='../../../img/logo_guarapuava.png' width='93%' />
                         </div>
                     </div>
                     {hasPermission('HOME') && <li><Link className="nav-link home" to="/app/home">Home</Link></li>}
