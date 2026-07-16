@@ -2,7 +2,7 @@ import axios from 'axios';
 import CryptoJS from 'crypto-js';
 
 const api = axios.create({
-    baseURL: "https://checkin-api.iacburitama.com.br",
+    baseURL: "https://checkin-api-iacguarapuava.softwareplus.com.br",
     timeout: 12000,
 });
 
