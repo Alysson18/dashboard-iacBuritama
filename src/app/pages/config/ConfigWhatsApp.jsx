@@ -138,7 +138,7 @@ const ConfigWhatsApp = () => {
                 config_id: META_CONFIG_ID,
                 response_type: 'code',
                 override_default_response_type: true,
-                extras: { setup: {}, sessionInfoVersion: '3' }
+                extras: { version: 'v4' }
             });
         } catch (error) {
             setConectando(false);
