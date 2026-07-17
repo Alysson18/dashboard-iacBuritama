@@ -73,7 +73,9 @@ const ConfigWhatsApp = () => {
 
             try {
                 const data = JSON.parse(event.data);
-                if (data.type === 'WA_EMBEDDED_SIGNUP' && data.event === 'FINISH') {
+                // 'FINISH' = número novo/migrado; 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING' = Coexistência (mantém o app)
+                const eventosFinalizacao = ['FINISH', 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING'];
+                if (data.type === 'WA_EMBEDDED_SIGNUP' && eventosFinalizacao.includes(data.event)) {
                     signupDataRef.current = {
                         phone_number_id: data.data?.phone_number_id,
                         waba_id: data.data?.waba_id,
