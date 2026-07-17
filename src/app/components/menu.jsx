@@ -314,6 +314,7 @@ function Menu({ conteudo }) {
                             {hasPermission('SETORES') && <li><Link className="nav-link setor" to="/app/cadastros/setores">Gestão de Setores</Link></li>}
                             {hasPermission('MENUBOT') && <li><Link className="nav-link robot" to="/app/cadastros/menu-bot">Menu do WhatsApp</Link></li>}
                             {hasPermission('HORARIOS') && <li><Link className="nav-link horarios" to="/app/configuracoes/horarios">Horários de Atendimento</Link></li>}
+                            {hasPermission('WHATSAPP_CONFIG') && <li><Link className="nav-link whatsapp" to="/app/configuracoes/whatsapp">Integração WhatsApp</Link></li>}
                         </ul>
                     </li>
                     <li className='mb-5'><Link className="nav-link logout" to="/" onClick={() => Logout()}>Logout</Link></li>
