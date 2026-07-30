@@ -28,6 +28,7 @@ function Usuarios() {
         { key: 'MENUBOT', label: 'Menu do WhatsApp' },
         { key: 'HORARIOS', label: 'Horários de Atendimento' },
         { key: 'WHATSAPP_CONFIG', label: 'Integração WhatsApp' },
+        { key: 'LINKS_PORTAL', label: 'Links do Portal Wi-Fi' },
     ];
 
     function encryptData(data) {

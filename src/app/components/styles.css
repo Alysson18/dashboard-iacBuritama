@@ -302,6 +302,10 @@ a[href*="#mensagens"]::before {
     content: "\f017" !important;
 }
 
+.wifi::before {
+    content: "\f1eb" !important;
+}
+
 /*-------------------------------*/
 /*       Hamburger-Cross         */
 /*-------------------------------*/

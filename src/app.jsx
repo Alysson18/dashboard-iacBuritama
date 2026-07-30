@@ -22,6 +22,7 @@ import Usuarios from './app/pages/cadastros/usuarios/usuarios.jsx';
 import MenuBot from './app/pages/cadastros/menuBot/MenuBot.jsx';
 import ConfigHorarios from './app/pages/config/ConfigHorarios.jsx';
 import ConfigWhatsApp from './app/pages/config/ConfigWhatsApp.jsx';
+import LinksPortal from './app/pages/cadastros/links/links.jsx';
 import MetaAnalytics from './app/pages/dados/metaAnalytics/metaAnalytics.jsx';
 /*Soluções*/
 
@@ -96,6 +97,7 @@ function App() {
       <SecureRoute exact path='/app/cadastros/menu-bot' component={MenuBot} />
       <SecureRoute exact path='/app/configuracoes/horarios' component={ConfigHorarios} />
       <SecureRoute exact path='/app/configuracoes/whatsapp' component={ConfigWhatsApp} />
+      <SecureRoute exact path='/app/cadastros/links' component={LinksPortal} />
       <SecureRoute exact path='/app/dados/meta-analytics' component={MetaAnalytics} />
 
       <LoginRoute exact path='/*' component={login} />

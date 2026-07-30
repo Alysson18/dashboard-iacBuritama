@@ -313,6 +313,7 @@ function Menu({ conteudo }) {
                             {hasPermission('USUARIOS') && <li><Link className="nav-link usuario" to="/app/cadastros/usuarios">Gestão de Usuários</Link></li>}
                             {hasPermission('SETORES') && <li><Link className="nav-link setor" to="/app/cadastros/setores">Gestão de Setores</Link></li>}
                             {hasPermission('MENUBOT') && <li><Link className="nav-link robot" to="/app/cadastros/menu-bot">Menu do WhatsApp</Link></li>}
+                            {hasPermission('LINKS_PORTAL') && <li><Link className="nav-link wifi" to="/app/cadastros/links">Links do Portal Wi-Fi</Link></li>}
                             {hasPermission('HORARIOS') && <li><Link className="nav-link horarios" to="/app/configuracoes/horarios">Horários de Atendimento</Link></li>}
                             {hasPermission('WHATSAPP_CONFIG') && <li><Link className="nav-link whatsapp" to="/app/configuracoes/whatsapp">Integração WhatsApp</Link></li>}
                         </ul>

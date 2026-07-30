@@ -3,6 +3,7 @@ import CryptoJS from 'crypto-js';
 
 const api = axios.create({
     baseURL: "https://checkin-api-iacguarapuava.softwareplus.com.br",
+    //baseURL: "http://127.0.0.1:3005",
     timeout: 12000,
 });
 
