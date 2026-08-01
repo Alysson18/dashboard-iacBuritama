@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../config/api.js'
 import './styles.css';
@@ -10,10 +10,12 @@ import md5 from 'md5';
 import PlanejamentoGastos from '../pages/relatorios/extratoMensalLista/extratoLista.jsx';
 import { socket } from '../config/socket.js';
 import { Redirect } from 'react-router-dom/cjs/react-router-dom.min.js';
+import { AuthContext } from '../Context/auth.jsx';
+import Logo from './Logo.jsx';
 
 
 function Menu({ conteudo }) {
-    const [empresas, setEmpresas] = useState([])
+    const { tipoUsuario, igrejaAtual, igrejasDisponiveis, setIgrejaAtual, setIgrejasDisponiveis } = useContext(AuthContext);
 
 
     function encryptData(data) {
@@ -37,6 +39,7 @@ function Menu({ conteudo }) {
     }
 
     function Logout() {
+        socket.disconnect();
         sessionStorage.clear();
         localStorage.clear();
         window.location.href = '/';
@@ -82,21 +85,61 @@ function Menu({ conteudo }) {
     }
 
 
-    // useState(() => {
-    //     Loading.show('Aguarde...')
-    //     const fetchGetList = async () => {
-    //         const res = await api.get("/usuario/empresas?id_usuario=" + decryptData(sessionStorage.getItem("id_usuario")));
-    //         setEmpresas(res.data.DATA)
-    //         Loading.hide();
-    //     }
-    //     fetchGetList();
-    //     // eslint-disable-next-line
-    // }, '')
+    // Multi-igreja: busca as igrejas que o usuário logado pode acessar (o backend resolve pelo
+    // token, não precisa mandar id_usuario). Mantém o AuthContext (e o cache em sessionStorage)
+    // atualizado, mesmo se os dados já tiverem vindo populados do login.
+    useEffect(() => {
+        const fetchIgrejas = async () => {
+            try {
+                const res = await api.get('/minhas-igrejas');
+                if (res.data.SUCCESS) {
+                    const lista = res.data.DATA || [];
+                    setIgrejasDisponiveis(lista);
+
+                    // Se a igreja atual não estiver mais na lista (ou não tiver nenhuma selecionada ainda),
+                    // seleciona a primeira disponível.
+                    const aindaValida = igrejaAtual && lista.some(i => i.ID_IGREJA === igrejaAtual.ID_IGREJA);
+                    if (!aindaValida && lista.length > 0) {
+                        setIgrejaAtual(lista[0]);
+                        if (lista[0].LOGO_URL) localStorage.setItem('igreja_logo_url', lista[0].LOGO_URL);
+                    }
+                }
+            } catch (e) {
+                // Falha silenciosa: mantém o que já estiver em cache (ex: backend ainda sem essa rota)
+            }
+        };
+        fetchIgrejas();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    function trocarIgreja(idIgreja) {
+        const nova = igrejasDisponiveis.find(i => String(i.ID_IGREJA) === String(idIgreja));
+        if (!nova) return;
+
+        setIgrejaAtual(nova);
+        if (nova.LOGO_URL) localStorage.setItem('igreja_logo_url', nova.LOGO_URL);
+
+        // Se "Mantenha-me conectado" estiver ativo, mantém o localStorage sincronizado também
+        if (localStorage.getItem('expiracao')) {
+            localStorage.setItem('igreja_atual', encryptData(JSON.stringify(nova)));
+        }
+
+        // Recarrega a aplicação para garantir que todas as telas voltem a buscar dados
+        // já filtrados pela nova igreja selecionada (mesmo padrão usado em outros sistemas
+        // do Alysson para troca de empresa/contexto).
+        window.location.reload();
+    }
 
 
     // Global Notification effect
     useEffect(() => {
-        socket.connect();
+        // O socket é um singleton compartilhado por toda a sessão (importado do módulo
+        // config/socket.js) — como o Menu remonta a cada troca de página (não há um layout
+        // persistente), NÃO desconectamos no cleanup abaixo, só ao deslogar (ver Logout()).
+        // Chamar connect() numa conexão já ativa/conectando é um no-op seguro do socket.io.
+        if (!socket.connected) {
+            socket.connect();
+        }
         const audio = new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg ");
 
         // Request notification permission
@@ -187,9 +230,10 @@ function Menu({ conteudo }) {
         socket.on('conversa_ticket', handleConversaTicket);
 
         return () => {
+            // Só remove os listeners deste componente — a conexão em si continua viva
+            // pra próxima página não precisar reconectar do zero.
             socket.off('ticket_novo', handleTicketNovo);
             socket.off('conversa_ticket', handleConversaTicket);
-            socket.disconnect();
             if (wakeLock !== null) {
                 wakeLock.release().then(() => { wakeLock = null; });
             }
@@ -238,6 +282,26 @@ function Menu({ conteudo }) {
                         <i class="bi bi-list"></i>
                     </button>
 
+                    {/* Seletor de igreja: mesmo lugar/estilo do seletor de empresa no financeiro-abac
+                        (navbar de cima, não na sidebar) — aparece sempre que houver ao menos 1 igreja */}
+                    {igrejasDisponiveis && igrejasDisponiveis.length > 0 && (
+                        <div className="navbar-brand ms-0">
+                            <select
+                                onChange={(e) => trocarIgreja(e.target.value)}
+                                value={igrejaAtual ? igrejaAtual.ID_IGREJA : ''}
+                                className="form-select w-100 entidades"
+                                aria-label="Igreja selecionada"
+                                id="select_igreja"
+                            >
+                                {igrejasDisponiveis.map(ig => (
+                                    <option className="text-black" key={ig.ID_IGREJA} value={ig.ID_IGREJA}>
+                                        {ig.NOME}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+
                     <div className="collapse navbar-collapse" id="navbarNav">
                     </div>
                 </div>
@@ -248,7 +312,7 @@ function Menu({ conteudo }) {
                 <ul className="nav sidebar-nav">
                     <div className="sidebar-header">
                         <div className="sidebar-brand">
-                            <img className='mt-2' src='../../../img/logo_guarapuava.png' width='93%' />
+                            <Logo className='mt-2' width='93%' alt='Logo' />
                         </div>
                     </div>
                     {hasPermission('HOME') && <li><Link className="nav-link home" to="/app/home">Home</Link></li>}
@@ -264,6 +328,9 @@ function Menu({ conteudo }) {
                                 <div className="dropdown-header">Dados</div>
                                 <li><Link className="nav-link grafico" to="/app/acessos/acesso-periodo">Acessos por Periodo</Link></li>
                                 <li><Link className="nav-link grafico" to="/app/acessos/quantidade-acesso">Qtd. Acessos por Pessoas</Link></li>
+                                <li><Link className="nav-link grafico" to="/app/dados/dashboard-acessos">Dashboard de Acessos</Link></li>
+                                <li><Link className="nav-link grafico" to="/app/dados/membros-ausentes">Membros Ausentes</Link></li>
+                                <li><Link className="nav-link grafico" to="/app/dados/acessos-por-evento">Acessos por Evento</Link></li>
                                 <div className="dropdown-header">Sorteio</div>
                                 <li><Link className="nav-link sorteio" to="/app/acessos/sorteio">Sortear</Link></li>
                             </ul>
@@ -298,6 +365,7 @@ function Menu({ conteudo }) {
                             <ul className="dropdown-menu animated fadeInLeft" role="menu">
                                 <div className="dropdown-header">Atendimento</div>
                                 <li><Link className="nav-link whatsapp" to="/app/atendimento/tickets">WhatsApp</Link></li>
+                                <li><Link className="nav-link grafico" to="/app/atendimento/metricas">Métricas de Atendimento</Link></li>
                             </ul>
                         </li>
                     )}
@@ -311,6 +379,8 @@ function Menu({ conteudo }) {
                             <li><Link className="nav-link key" data-bs-toggle="modal" data-bs-target="#alterarSenhaModal">Alterar Senha</Link></li>
                             {(hasPermission('USUARIOS') || hasPermission('SETORES')) && <div className="dropdown-header">Administração</div>}
                             {hasPermission('USUARIOS') && <li><Link className="nav-link usuario" to="/app/cadastros/usuarios">Gestão de Usuários</Link></li>}
+                            {/* Checagem de tipoUsuario aqui é só UX (esconder o link); a barreira real fica no backend (SistemaRoute só redireciona, e a API confere de novo). */}
+                            {tipoUsuario === 'SISTEMA' && <li><Link className="nav-link setor" to="/app/cadastros/igrejas">Gestão de Igrejas</Link></li>}
                             {hasPermission('SETORES') && <li><Link className="nav-link setor" to="/app/cadastros/setores">Gestão de Setores</Link></li>}
                             {hasPermission('MENUBOT') && <li><Link className="nav-link robot" to="/app/cadastros/menu-bot">Menu do WhatsApp</Link></li>}
                             {hasPermission('LINKS_PORTAL') && <li><Link className="nav-link wifi" to="/app/cadastros/links">Links do Portal Wi-Fi</Link></li>}

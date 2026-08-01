@@ -24,6 +24,11 @@ import ConfigHorarios from './app/pages/config/ConfigHorarios.jsx';
 import ConfigWhatsApp from './app/pages/config/ConfigWhatsApp.jsx';
 import LinksPortal from './app/pages/cadastros/links/links.jsx';
 import MetaAnalytics from './app/pages/dados/metaAnalytics/metaAnalytics.jsx';
+import DashboardAcessos from './app/pages/dados/dashboardAcessos/dashboardAcessos.jsx';
+import MembrosAusentes from './app/pages/dados/membrosAusentes/membrosAusentes.jsx';
+import AcessosPorEvento from './app/pages/dados/acessosPorEvento/acessosPorEvento.jsx';
+import MetricasAtendimento from './app/pages/atendimento/metricasAtendimento/metricasAtendimento.jsx';
+import Igrejas from './app/pages/cadastros/igrejas/igrejas.jsx';
 /*Soluções*/
 
 function decryptData(encryptedData) {
@@ -43,7 +48,7 @@ if (expiracaoCripto) {
   if (expiracaoRaw && new Date().getTime() < parseInt(expiracaoRaw)) {
     // Sessão ainda é válida, restaura para o sessionStorage se estiver vazio
     if (!sessionStorage.getItem('logado')) {
-      const chaves = ['logado', 'nome_usuario', 'id_usuario', 'permissoes', 'id_setor'];
+      const chaves = ['logado', 'nome_usuario', 'id_usuario', 'permissoes', 'id_setor', 'tipo_usuario', 'igreja_atual', 'igrejas_disponiveis'];
       chaves.forEach(key => {
         const valor = localStorage.getItem(key);
         if (valor) sessionStorage.setItem(key, valor);
@@ -55,28 +60,50 @@ if (expiracaoCripto) {
   }
 }
 
-function App() {
+// IMPORTANTE: estes wrappers de rota ficam FORA do componente App (nível de módulo),
+// não dentro dele. Declará-los dentro de App() faz o React recriar a "identidade" desses
+// componentes a cada render de App, o que força desmontar/remontar toda a árvore da rota
+// ativa (Home, Menu, etc.) sempre que o AuthContext mudar — e como o Menu atualiza o
+// contexto ao buscar as igrejas, isso virava um loop infinito de remontagem.
+function SecureRoute({ ...params }) {
   const { logado } = useContext(AuthContext);
-
-
-  function SecureRoute({ ...params }) {
-    if (!logado) {
-      return <Redirect to='/' />
-    }
-    else {
-      return <Route {...params} />
-    }
+  if (!logado) {
+    return <Redirect to='/' />
   }
-
-  function LoginRoute({ ...params }) {
-    if (logado) {
-      return <Redirect to='/app/home' />
-    }
-    else {
-      return <Route {...params} />
-    }
+  else {
+    return <Route {...params} />
   }
+}
 
+function LoginRoute({ ...params }) {
+  const { logado } = useContext(AuthContext);
+  if (logado) {
+    return <Redirect to='/app/home' />
+  }
+  else {
+    return <Route {...params} />
+  }
+}
+
+// Rota de gestão de igrejas: exclusiva do usuário SISTEMA (criar/editar/desativar igreja).
+// Administrador não entra aqui — o vínculo de usuário a igreja pra ele acontece pela tela de
+// Usuários (usuarios.jsx), restrito à(s) igreja(s) que ele administra.
+// Isso é só uma conveniência de UX (evita renderizar a tela pra quem não devia ver);
+// a barreira de verdade é o backend, que rejeita (403) quem não é Sistema.
+function SistemaRoute({ ...params }) {
+  const { logado, tipoUsuario } = useContext(AuthContext);
+  if (!logado) {
+    return <Redirect to='/' />
+  }
+  else if (tipoUsuario !== 'SISTEMA') {
+    return <Redirect to='/app/home' />
+  }
+  else {
+    return <Route {...params} />
+  }
+}
+
+function App() {
   return <BrowserRouter>
     <Switch>
       <LoginRoute exact path='/' component={login} />
@@ -94,11 +121,16 @@ function App() {
       <SecureRoute exact path='/app/atendimento/chat' component={TicketChat} />
       <SecureRoute exact path='/app/cadastros/setores' component={Setores} />
       <SecureRoute exact path='/app/cadastros/usuarios' component={Usuarios} />
+      <SistemaRoute exact path='/app/cadastros/igrejas' component={Igrejas} />
       <SecureRoute exact path='/app/cadastros/menu-bot' component={MenuBot} />
       <SecureRoute exact path='/app/configuracoes/horarios' component={ConfigHorarios} />
       <SecureRoute exact path='/app/configuracoes/whatsapp' component={ConfigWhatsApp} />
       <SecureRoute exact path='/app/cadastros/links' component={LinksPortal} />
       <SecureRoute exact path='/app/dados/meta-analytics' component={MetaAnalytics} />
+      <SecureRoute exact path='/app/dados/dashboard-acessos' component={DashboardAcessos} />
+      <SecureRoute exact path='/app/dados/membros-ausentes' component={MembrosAusentes} />
+      <SecureRoute exact path='/app/dados/acessos-por-evento' component={AcessosPorEvento} />
+      <SecureRoute exact path='/app/atendimento/metricas' component={MetricasAtendimento} />
 
       <LoginRoute exact path='/*' component={login} />
     </Switch>

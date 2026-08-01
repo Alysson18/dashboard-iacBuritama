@@ -8,6 +8,8 @@ import toastr from 'toastr';
 import 'toastr/build/toastr.min.css';
 import './../../css/estilo.css'
 import { Mask } from '../../../config/Util.js';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 function AcessoPessoas() {
 
@@ -105,6 +107,61 @@ function AcessoPessoas() {
     }
 
 
+    async function exportarPDF() {
+        const dataInicial = document.getElementById('inputDataInicial').value;
+        const dataFinal = document.getElementById('inputDataFinal').value;
+
+        Loading.show('Gerando PDF...');
+        try {
+            // Busca a lista inteira do período (não só a página atual de 10) pra exportar.
+            const res = await api.get(
+                `/pessoas/checkinPeriodo/?dataInicial=${dataInicial}&dataFinal=${dataFinal}&page=1&pageSize=10000`
+            );
+
+            if (!res.data.DATA || res.data.DATA.length === 0) {
+                toastr.warning('Sem dados no período selecionado para gerar PDF!', 'Atenção');
+                return;
+            }
+
+            const formatarDataBR = (iso) => iso ? iso.split('-').reverse().join('/') : '';
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = doc.internal.pageSize.getWidth();
+
+            doc.setFontSize(14);
+            doc.text('Acessos por Período', pageWidth / 2, 15, { align: 'center' });
+            doc.setFontSize(10);
+            doc.text(`Período: ${formatarDataBR(dataInicial)} - ${formatarDataBR(dataFinal)}`, 15, 23);
+            doc.text(`Total de registros: ${res.data.DATA.length}`, pageWidth - 15, 23, { align: 'right' });
+            doc.line(15, 27, pageWidth - 15, 27);
+
+            autoTable(doc, {
+                startY: 32,
+                head: [['Código', 'Nome Completo', 'Telefone', 'Tipo Pessoa', 'Data Checkin']],
+                body: res.data.DATA.map((CC) => ([
+                    CC.ID_PESSOA,
+                    CC.NOME,
+                    Mask.telefone(CC.TELEFONE),
+                    CC.MEMBRO === 'S' ? 'Membro' : 'Visitante',
+                    CC.DATA_FORMATADA,
+                ])),
+                styles: { fontSize: 8, cellPadding: 1.5 },
+                headStyles: { fillColor: [44, 62, 80], textColor: [255, 255, 255], halign: 'center' },
+                didDrawPage: () => {
+                    const pageNumber = doc.internal.getNumberOfPages();
+                    doc.setFontSize(8);
+                    doc.setTextColor(120);
+                    doc.text(`Gerado em ${new Date().toLocaleDateString('pt-BR')} - Página ${pageNumber}`, pageWidth / 2, 290, { align: 'center' });
+                }
+            });
+
+            doc.save('acessos_por_periodo.pdf');
+        } catch (error) {
+            toastr.error('Erro ao gerar PDF: ' + error, 'Erro');
+        } finally {
+            Loading.hide();
+        }
+    }
+
     const type = (navigator.userAgent.match(/Android/i)
         || navigator.userAgent.match(/webOS/i)
         || navigator.userAgent.match(/iPhone/i)
@@ -141,9 +198,11 @@ function AcessoPessoas() {
                     <button onClick={() => BuscarNome()}
                         className="btn btn-outline-secondary" type="button" id="button-addon2">Consultar</button>
                 </div>
-                <div className='col-md-2'>
-                    <div className="input-group">
-                    </div>
+                <div className='col-md-2 mt-1'>
+                    <button onClick={() => exportarPDF()}
+                        className="btn btn-outline-danger w-100" type="button">
+                        <i className="bi bi-file-earmark-pdf me-1"></i>Exportar PDF
+                    </button>
                 </div>
 
             </div>

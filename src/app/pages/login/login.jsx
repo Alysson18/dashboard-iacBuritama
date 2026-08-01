@@ -8,6 +8,7 @@ import Loading from '../../components/loading/loading';
 import CryptoJS from 'crypto-js';
 import toastr from 'toastr';
 import 'toastr/build/toastr.min.css';
+import Logo from '../../components/Logo.jsx';
 
 
 toastr.options = {
@@ -35,7 +36,7 @@ function Login() {
     const [senha, setSenha] = useState('');
     const [manterConectado, setManterConectado] = useState(false);
     const [Sucesso, setSucesso] = useState('Nulo');
-    const { setLogado } = useContext(AuthContext);
+    const { setLogado, setTipoUsuario, setIgrejaAtual, setIgrejasDisponiveis } = useContext(AuthContext);
     const senhaHash = md5(senha)
 
 
@@ -52,12 +53,18 @@ function Login() {
             Loading.show('Efetuando Login...')
             api.post("/login", { "USUARIO": email, "SENHA": md5(senha) }).then(function (AxiosResponse) {
                 if (AxiosResponse.data.SUCCESS === true) {
+                    const usuarioLogado = AxiosResponse.data.DATA[0];
+                    // Multi-igreja: o backend agora manda o tipo do usuário junto com os dados de login
+                    // (também vem nas claims do JWT, mas usar direto do DATA[0] evita depender de lib de decode).
+                    const tipoUsuarioLogado = usuarioLogado.TIPO_USUARIO || 'USUARIO';
+
                     const dados = {
                         logado: encryptData("S"),
-                        nome_usuario: encryptData(AxiosResponse.data.DATA[0].NOME),
-                        id_usuario: encryptData(AxiosResponse.data.DATA[0].ID),
-                        permissoes: encryptData(AxiosResponse.data.DATA[0].PERMISSOES || "[]"),
-                        id_setor: encryptData(AxiosResponse.data.DATA[0].ID_SETOR || ""),
+                        nome_usuario: encryptData(usuarioLogado.NOME),
+                        id_usuario: encryptData(usuarioLogado.ID),
+                        permissoes: encryptData(usuarioLogado.PERMISSOES || "[]"),
+                        id_setor: encryptData(usuarioLogado.ID_SETOR || ""),
+                        tipo_usuario: encryptData(tipoUsuarioLogado),
                         token: encryptData(AxiosResponse.data.TOKEN)
                     };
 
@@ -75,8 +82,37 @@ function Login() {
                     }
 
                     //sessionStorage.setItem("id_empresa", encryptData(AxiosResponse.data.DATA[0].EMPRESA_PADRAO));
-                    setLogado(true);
-                    setSucesso('S')
+                    setTipoUsuario(tipoUsuarioLogado);
+
+                    // Busca as igrejas que o usuário logado pode acessar (multi-tenant)
+                    api.get('/minhas-igrejas').then(function (resIgrejas) {
+                        const igrejas = (resIgrejas.data.SUCCESS && resIgrejas.data.DATA) ? resIgrejas.data.DATA : [];
+                        setIgrejasDisponiveis(igrejas);
+
+                        // Se só tiver 1 igreja, já seleciona ela. Se tiver mais de uma, seleciona a primeira por padrão
+                        // (o usuário pode trocar depois pelo seletor no menu).
+                        const igrejaSelecionada = igrejas.length > 0 ? igrejas[0] : null;
+                        setIgrejaAtual(igrejaSelecionada);
+
+                        // Atualiza o cache (localStorage, sem criptografia) da logo da igreja selecionada,
+                        // usado pelo componente <Logo /> inclusive antes do login.
+                        if (igrejaSelecionada && igrejaSelecionada.LOGO_URL) {
+                            localStorage.setItem('igreja_logo_url', igrejaSelecionada.LOGO_URL);
+                        }
+
+                        // Espelha em localStorage também, se "Mantenha-me conectado" estiver marcado
+                        if (manterConectado) {
+                            localStorage.setItem('igrejas_disponiveis', encryptData(JSON.stringify(igrejas)));
+                            localStorage.setItem('igreja_atual', encryptData(JSON.stringify(igrejaSelecionada)));
+                        }
+
+                        setLogado(true);
+                        setSucesso('S')
+                    }).catch(function () {
+                        // Se a rota /minhas-igrejas falhar (ex: backend ainda sem esse endpoint), não trava o login
+                        setLogado(true);
+                        setSucesso('S')
+                    });
                 }
                 else {
                     Loading.hide();
@@ -121,7 +157,7 @@ function Login() {
     return <div className="d-flex align-items-center text-center form-container">
         <div className="card card-login form-signin colorCard">
             <form className="form-signin">
-                <img className="mb-3 mt-3" src="../../img/logo_guarapuava.png" alt="" width="300" />
+                <Logo className="mb-3 mt-3" width="300" alt="Logo" />
                 <h1 className="h3 mb-3 fw-normal text-white">Login</h1>
 
                 <div className="form-floating mb-1">

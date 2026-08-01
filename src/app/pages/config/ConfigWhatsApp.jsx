@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
 import NavBar from '../../components/menu.jsx';
 import api from '../../config/api.js';
 import Loading from '../../components/loading/loading.js';
 import toastr from 'toastr';
 import 'toastr/build/toastr.min.css';
+import { AuthContext } from '../../Context/auth.jsx';
 import '../css/estilo.css';
 
 const META_APP_ID = process.env.REACT_APP_META_APP_ID;
 const META_CONFIG_ID = process.env.REACT_APP_META_CONFIG_ID;
-const FB_SDK_VERSION = 'v22.0';
+const FB_SDK_VERSION = 'v26.0';
 
 // Carrega o SDK JS da Meta uma única vez (usado pelo botão de Embedded Signup)
 let fbSdkPromise = null;
@@ -43,6 +44,9 @@ function carregarFacebookSdk() {
 }
 
 const ConfigWhatsApp = () => {
+    const { igrejaAtual } = useContext(AuthContext);
+    const idIgreja = igrejaAtual ? igrejaAtual.ID_IGREJA : '';
+
     const [status, setStatus] = useState(null);
     const [conectando, setConectando] = useState(false);
     const [controle, setControle] = useState(0);
@@ -51,7 +55,7 @@ const ConfigWhatsApp = () => {
     const carregarStatus = useCallback(async () => {
         Loading.show('Aguarde....');
         try {
-            const res = await api.get('/whatsapp/config');
+            const res = await api.get(`/whatsapp/config?id_igreja=${idIgreja}`);
             if (res.data.SUCCESS) {
                 setStatus(res.data.DATA);
             }
@@ -60,7 +64,7 @@ const ConfigWhatsApp = () => {
         } finally {
             Loading.hide();
         }
-    }, []);
+    }, [idIgreja]);
 
     useEffect(() => {
         carregarStatus();
@@ -102,7 +106,7 @@ const ConfigWhatsApp = () => {
 
         Loading.show('Conectando número do WhatsApp...');
         try {
-            const res = await api.post('/whatsapp/connect', { code, phone_number_id, waba_id, business_id });
+            const res = await api.post('/whatsapp/connect', { code, phone_number_id, waba_id, business_id, id_igreja: idIgreja });
             if (res.data.SUCCESS) {
                 toastr.success(res.data.MESSAGE || 'WhatsApp conectado com sucesso!');
                 setControle(prev => prev + 1);
@@ -140,7 +144,7 @@ const ConfigWhatsApp = () => {
                 config_id: META_CONFIG_ID,
                 response_type: 'code',
                 override_default_response_type: true,
-                extras: { version: 'v4' }
+                extras: { sessionInfoVersion: '3', version: 'v4' }
             });
         } catch (error) {
             setConectando(false);
@@ -153,7 +157,7 @@ const ConfigWhatsApp = () => {
 
         Loading.show('Desconectando...');
         try {
-            const res = await api.post('/whatsapp/disconnect');
+            const res = await api.post('/whatsapp/disconnect', { id_igreja: idIgreja });
             if (res.data.SUCCESS) {
                 toastr.success('WhatsApp desconectado.');
                 setControle(prev => prev + 1);

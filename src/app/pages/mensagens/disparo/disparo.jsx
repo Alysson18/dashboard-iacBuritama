@@ -11,6 +11,8 @@ function MensagensDisparo() {
     const [membro, setMembro] = useState('');
     const [templateSelecionado, setTemplateSelecionado] = useState('');
     const [controle, setControle] = useState(0);
+    const [dataInicial, setDataInicial] = useState('');
+    const [dataFinal, setDataFinal] = useState('');
 
     useEffect(() => {
         async function fetchTemplates() {
@@ -33,11 +35,16 @@ function MensagensDisparo() {
         if (!membro || !templateSelecionado) {
             return toastr.warning("Selecione os destinatários e a mensagem.", "Atenção");
         }
+        if ((dataInicial && !dataFinal) || (!dataInicial && dataFinal)) {
+            return toastr.warning("Preencha as duas datas do período de conexão, ou nenhuma.", "Atenção");
+        }
 
         Loading.show('Iniciando disparos...')
         api.post(`/template/enviarMensagem`, {
             MEMBRO: membro,
             NOME_MODELO: templateSelecionado,
+            DATA_INICIAL: dataInicial || null,
+            DATA_FINAL: dataFinal || null,
         }).then(function (AxiosResponse) {
             Loading.hide();
             if (AxiosResponse.data.SUCCESS === true) {
@@ -91,6 +98,18 @@ function MensagensDisparo() {
                         <button className="btn btn-secondary w-100" type="button" onClick={() => setControle(c => c + 1)}>
                             <i className="bi bi-arrow-clockwise me-1"></i>Atualizar
                         </button>
+                    </div>
+                </div>
+                <div className="row mt-3">
+                    <div className='col-md-5 mt-1'>
+                        <b className="labelDescC">Conectou a partir de (opcional)</b>
+                        <input type="date" className="form-control form-control-sm"
+                            value={dataInicial} onChange={(e) => setDataInicial(e.target.value)} />
+                    </div>
+                    <div className='col-md-5 mt-1'>
+                        <b className="labelDescC">Conectou até (opcional)</b>
+                        <input type="date" className="form-control form-control-sm"
+                            value={dataFinal} onChange={(e) => setDataFinal(e.target.value)} />
                     </div>
                 </div>
                 <div className="row mt-4">
