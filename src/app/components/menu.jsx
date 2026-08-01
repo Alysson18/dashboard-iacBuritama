@@ -330,6 +330,7 @@ function Menu({ conteudo }) {
                                 <li><Link className="nav-link grafico" to="/app/acessos/quantidade-acesso">Qtd. Acessos por Pessoas</Link></li>
                                 <li><Link className="nav-link grafico" to="/app/dados/dashboard-acessos">Dashboard de Acessos</Link></li>
                                 <li><Link className="nav-link grafico" to="/app/dados/membros-ausentes">Membros Ausentes</Link></li>
+                                <li><Link className="nav-link grafico" to="/app/dados/aniversariantes">Aniversariantes do Mês</Link></li>
                                 <li><Link className="nav-link grafico" to="/app/dados/acessos-por-evento">Acessos por Evento</Link></li>
                                 <div className="dropdown-header">Sorteio</div>
                                 <li><Link className="nav-link sorteio" to="/app/acessos/sorteio">Sortear</Link></li>

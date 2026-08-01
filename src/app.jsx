@@ -26,6 +26,7 @@ import LinksPortal from './app/pages/cadastros/links/links.jsx';
 import MetaAnalytics from './app/pages/dados/metaAnalytics/metaAnalytics.jsx';
 import DashboardAcessos from './app/pages/dados/dashboardAcessos/dashboardAcessos.jsx';
 import MembrosAusentes from './app/pages/dados/membrosAusentes/membrosAusentes.jsx';
+import Aniversariantes from './app/pages/dados/aniversariantes/aniversariantes.jsx';
 import AcessosPorEvento from './app/pages/dados/acessosPorEvento/acessosPorEvento.jsx';
 import MetricasAtendimento from './app/pages/atendimento/metricasAtendimento/metricasAtendimento.jsx';
 import Igrejas from './app/pages/cadastros/igrejas/igrejas.jsx';
@@ -129,6 +130,7 @@ function App() {
       <SecureRoute exact path='/app/dados/meta-analytics' component={MetaAnalytics} />
       <SecureRoute exact path='/app/dados/dashboard-acessos' component={DashboardAcessos} />
       <SecureRoute exact path='/app/dados/membros-ausentes' component={MembrosAusentes} />
+      <SecureRoute exact path='/app/dados/aniversariantes' component={Aniversariantes} />
       <SecureRoute exact path='/app/dados/acessos-por-evento' component={AcessosPorEvento} />
       <SecureRoute exact path='/app/atendimento/metricas' component={MetricasAtendimento} />
 

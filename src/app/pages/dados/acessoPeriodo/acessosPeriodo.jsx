@@ -18,6 +18,7 @@ function AcessoPessoas() {
     const [pagina, setPagina] = useState(1);
     const [pageCount, setpageCount] = useState(1);
     const [controle, setControle] = useState(0);
+    const [origem, setOrigem] = useState('');
 
     function encryptData(data) {
         return CryptoJS.AES.encrypt(data.toString(), 'Alysson-2025-IACBURITAMA').toString();
@@ -46,7 +47,7 @@ function AcessoPessoas() {
         const fetchGetList = async () => {
             try {
                 const res = await api.get(
-                    `/pessoas/checkinPeriodo/?dataInicial=${document.getElementById('inputDataInicial').value}&dataFinal=${document.getElementById('inputDataFinal').value}&page=${pagina}&pageSize=10`
+                    `/pessoas/checkinPeriodo/?dataInicial=${document.getElementById('inputDataInicial').value}&dataFinal=${document.getElementById('inputDataFinal').value}&page=${pagina}&pageSize=10&origem=${origem}`
                 );
                 if (res.data.DATA.length > 0) {
                     setPessoa(res.data.DATA);
@@ -84,7 +85,7 @@ function AcessoPessoas() {
             Loading.show("Aguarde....");
             try {
                 const res = await api.get(
-                    `/pessoas/checkinPeriodo/?dataInicial=${document.getElementById('inputDataInicial').value}&dataFinal=${document.getElementById('inputDataFinal').value}&page=${pagina}&pageSize=10`
+                    `/pessoas/checkinPeriodo/?dataInicial=${document.getElementById('inputDataInicial').value}&dataFinal=${document.getElementById('inputDataFinal').value}&page=${pagina}&pageSize=10&origem=${origem}`
                 );
                 if (res.data.DATA.length > 0) {
                     setPessoa(res.data.DATA);
@@ -115,7 +116,7 @@ function AcessoPessoas() {
         try {
             // Busca a lista inteira do período (não só a página atual de 10) pra exportar.
             const res = await api.get(
-                `/pessoas/checkinPeriodo/?dataInicial=${dataInicial}&dataFinal=${dataFinal}&page=1&pageSize=10000`
+                `/pessoas/checkinPeriodo/?dataInicial=${dataInicial}&dataFinal=${dataFinal}&page=1&pageSize=10000&origem=${origem}`
             );
 
             if (!res.data.DATA || res.data.DATA.length === 0) {
@@ -136,12 +137,13 @@ function AcessoPessoas() {
 
             autoTable(doc, {
                 startY: 32,
-                head: [['Código', 'Nome Completo', 'Telefone', 'Tipo Pessoa', 'Data Checkin']],
+                head: [['Código', 'Nome Completo', 'Telefone', 'Tipo Pessoa', 'Origem', 'Data Checkin']],
                 body: res.data.DATA.map((CC) => ([
                     CC.ID_PESSOA,
                     CC.NOME,
                     Mask.telefone(CC.TELEFONE),
                     CC.MEMBRO === 'S' ? 'Membro' : 'Visitante',
+                    CC.ORIGEM,
                     CC.DATA_FORMATADA,
                 ])),
                 styles: { fontSize: 8, cellPadding: 1.5 },
@@ -193,10 +195,17 @@ function AcessoPessoas() {
                             aria-describedby="button-addon2" />
                     </div>
                 </div>
-                <div className='col-md-3 mt-1'>
+                <div className='col-md-2 mt-1'>
+                    <select className="form-select" value={origem} onChange={(e) => setOrigem(e.target.value)}>
+                        <option value="">Todas as Origens</option>
+                        <option value="WIFI">WiFi</option>
+                        <option value="LINK">Link</option>
+                    </select>
+                </div>
+                <div className='col-md-2 mt-1'>
 
                     <button onClick={() => BuscarNome()}
-                        className="btn btn-outline-secondary" type="button" id="button-addon2">Consultar</button>
+                        className="btn btn-outline-secondary w-100" type="button" id="button-addon2">Consultar</button>
                 </div>
                 <div className='col-md-2 mt-1'>
                     <button onClick={() => exportarPDF()}
@@ -215,6 +224,7 @@ function AcessoPessoas() {
                                 <th className='nome' scope="col">Nome Completo</th>
                                 <th className='nome' scope="col">Telefone</th>
                                 <th className='nome' scope="col">Tipo Pessoa</th>
+                                <th className='nome' scope="col">Origem</th>
                                 <th className='fim_Grid' scope="col">Data Checkin</th>
                             </tr>
                         </thead>
@@ -226,12 +236,13 @@ function AcessoPessoas() {
                                         <td>{CC.NOME.length > 20 ? CC.NOME.slice(0, 20) + '...' : CC.NOME}</td>
                                         <td>{Mask.telefone(CC.TELEFONE)}</td>
                                         <td>{(CC.MEMBRO === 'S') ? 'Membro' : 'Visitante'}</td>
+                                        <td>{CC.ORIGEM}</td>
                                         <td>{CC.DATA_FORMATADA}</td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="5" className="text-center">Nenhuma pessoa encontrada</td>
+                                    <td colSpan="6" className="text-center">Nenhuma pessoa encontrada</td>
                                 </tr>
 
                             )

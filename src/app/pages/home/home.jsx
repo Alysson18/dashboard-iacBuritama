@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import './estilo.css';
 import NavBar from '../../components/menu.jsx';
 import api from '../../config/api.js';
 import Loading from '../../components/loading/loading.js';
-import CryptoJS from 'crypto-js';
 import toastr from 'toastr';
 import 'toastr/build/toastr.min.css';
 import {
@@ -20,47 +20,42 @@ import {
     Legend,
 } from 'chart.js';
 
-import { Bar, Line, Pie } from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
 
 
 function Site() {
     ChartJS.register(CategoryScale, LinearScale, PointElement,
         LineElement, BarElement, ArcElement, Title, Tooltip, Legend);
 
-    function encryptData(data) {
-        return CryptoJS.AES.encrypt(data.toString(), 'Alysson-2025-ABAC').toString();
-    }
-
-    function decryptData(encryptedData) {
-        const bytes = CryptoJS.AES.decrypt(encryptedData.toString(), 'Alysson-2025-ABAC');
-        return bytes.toString(CryptoJS.enc.Utf8);
-    }
-
-
-
     const [dados, setDados] = useState([]);
-    const [pagina, setPagina] = useState(1);
-    const [controle, setControle] = useState(0);
+    const [resumo, setResumo] = useState(null);
+    const [controle] = useState(0);
 
     useEffect(() => {
-        const fetchGetList = async () => {
-            Loading.show("Aguarde....");
+        const fetchGrafico = async () => {
             try {
                 const res = await api.get(`/acessosrede/graficohome`);
                 if (res.data.DATA.length > 0) {
                     setDados(res.data.DATA)
                 }
             } catch (error) {
-                toastr.error("Erro ao buscar despesas:", error);
-            } finally {
-                Loading.hide();
+                toastr.error("Erro ao buscar gráfico de acessos:", error);
             }
-
         };
 
-        fetchGetList();
+        const fetchResumo = async () => {
+            try {
+                const res = await api.get(`/home/resumo`);
+                if (res.data.SUCCESS) {
+                    setResumo(res.data.DATA);
+                }
+            } catch (error) {
+                toastr.error("Erro ao buscar resumo da home:", error);
+            }
+        };
 
-
+        Loading.show("Aguarde....");
+        Promise.all([fetchGrafico(), fetchResumo()]).finally(() => Loading.hide());
 
     }, [controle]);
 
@@ -74,28 +69,65 @@ function Site() {
 
     const conteudoHtml =
         <div className="container mb-5 mt-0 pt-0 mt-0">
-            <div className="row">
-                <h3 className='text-center mb-3'>Quantidade de Acessos Mês {mesExtenso.charAt(0).toUpperCase() + mesExtenso.slice(1)}
-                </h3>
-            </div>
+            {resumo && (
+                <div className="row mb-3 text-center gx-3">
+                    <div className="col-md-3 col-6 mb-2">
+                        <Link to="/app/dados/dashboard-acessos" className="text-decoration-none">
+                            <div className="card shadow-sm p-3 h-100" style={{ borderLeft: '5px solid #4e73df' }}>
+                                <span className="text-primary text-uppercase fw-bold" style={{ fontSize: '11px' }}>Check-ins Hoje</span>
+                                <h5 className="fw-bold mb-0">{resumo.CHECKINS_HOJE}</h5>
+                            </div>
+                        </Link>
+                    </div>
+                    <div className="col-md-3 col-6 mb-2">
+                        <Link to="/app/atendimento/tickets" className="text-decoration-none">
+                            <div className="card shadow-sm p-3 h-100" style={{ borderLeft: '5px solid #e74a3b' }}>
+                                <span className="text-danger text-uppercase fw-bold" style={{ fontSize: '11px' }}>Tickets Abertos</span>
+                                <h5 className="fw-bold mb-0">{resumo.TICKETS_ABERTOS}</h5>
+                            </div>
+                        </Link>
+                    </div>
+                    <div className="col-md-3 col-6 mb-2">
+                        <Link to="/app/cadastros/pessoas" className="text-decoration-none">
+                            <div className="card shadow-sm p-3 h-100" style={{ borderLeft: '5px solid #1cc88a' }}>
+                                <span className="text-success text-uppercase fw-bold" style={{ fontSize: '11px' }}>Visitantes Novos (7 dias)</span>
+                                <h5 className="fw-bold mb-0">{resumo.VISITANTES_NOVOS_SEMANA}</h5>
+                            </div>
+                        </Link>
+                    </div>
+                    <div className="col-md-3 col-6 mb-2">
+                        <Link to="/app/dados/membros-ausentes" className="text-decoration-none">
+                            <div className="card shadow-sm p-3 h-100" style={{ borderLeft: '5px solid #36b9cc' }}>
+                                <span className="text-info text-uppercase fw-bold" style={{ fontSize: '11px' }}>Membros Ausentes (30+)</span>
+                                <h5 className="fw-bold mb-0">{resumo.MEMBROS_AUSENTES}</h5>
+                            </div>
+                        </Link>
+                    </div>
+                </div>
+            )}
+
             <div className="row">
                 <div className="col-md-12">
-                    <div className="card card-graficos">
-                        <Bar data={{
-                            labels: labels,
-                            datasets: [{
-                                label: 'Acessos',
-                                data: quanidadeAcesso,
-                                backgroundColor: 'rgb(75, 192, 192)',
-                                borderColor: 'rgb(75, 192, 192)',
-                                borderWidth: 1
-                            }],
-                        }}
-                            options={{
-                                responsive: true,
-                                maintainAspectRatio: false,
-
-                            }} />
+                    <div className="card p-2">
+                        <h6 className="fw-bold mb-2 text-center" style={{ fontSize: '13px' }}>
+                            Quantidade de Acessos - {mesExtenso.charAt(0).toUpperCase() + mesExtenso.slice(1)}
+                        </h6>
+                        <div style={{ height: 'calc(100vh - 260px)', minHeight: '400px' }}>
+                            <Bar data={{
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Acessos',
+                                    data: quanidadeAcesso,
+                                    backgroundColor: 'rgb(75, 192, 192)',
+                                    borderColor: 'rgb(75, 192, 192)',
+                                    borderWidth: 1
+                                }],
+                            }}
+                                options={{
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                }} />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -104,12 +136,6 @@ function Site() {
 
     return (<>
         <NavBar conteudo={conteudoHtml} />
-
-        {/* <div className="d-flex">
-            <NavBar />
-           
-        </div> */}
-
     </>
     );
 }

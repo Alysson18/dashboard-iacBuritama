@@ -70,6 +70,7 @@ function DashboardAcessos() {
     const porDiaSemana = dados?.POR_DIA_SEMANA || [];
     const porRecorrencia = dados?.POR_RECORRENCIA || [];
     const tendencia = dados?.TENDENCIA || [];
+    const porOrigem = dados?.POR_ORIGEM || [];
 
     const membros = porTipo.find(t => t.TIPO === 'Membro')?.ACESSOS || 0;
     const visitantes = porTipo.find(t => t.TIPO === 'Visitante')?.ACESSOS || 0;
@@ -118,6 +119,17 @@ function DashboardAcessos() {
                 porRecorrencia.find(r => r.CATEGORIA === 'Recorrente (2+)')?.QTD_PESSOAS || 0,
             ],
             backgroundColor: ['#858796', '#4e73df'],
+        }]
+    };
+
+    const dataOrigem = {
+        labels: ['WiFi', 'Link'],
+        datasets: [{
+            data: [
+                porOrigem.find(o => o.ORIGEM === 'WiFi')?.ACESSOS || 0,
+                porOrigem.find(o => o.ORIGEM === 'Link')?.ACESSOS || 0,
+            ],
+            backgroundColor: ['#4e73df', '#1cc88a'],
         }]
     };
 
@@ -200,6 +212,18 @@ function DashboardAcessos() {
                                 <h6 className="fw-bold mb-2 text-center" style={{ fontSize: '13px' }}>Acessos por Período do Dia</h6>
                                 <div style={{ height: '220px' }}>
                                     <Doughnut data={dataPeriodo}
+                                        options={{ maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="row mb-3">
+                        <div className="col-md-6 mb-2">
+                            <div className="card shadow-sm p-2" style={{ borderRadius: '8px' }}>
+                                <h6 className="fw-bold mb-2 text-center" style={{ fontSize: '13px' }}>Acessos por Origem (WiFi vs Link)</h6>
+                                <div style={{ height: '220px' }}>
+                                    <Doughnut data={dataOrigem}
                                         options={{ maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }} />
                                 </div>
                             </div>
