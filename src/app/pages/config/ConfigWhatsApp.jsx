@@ -144,7 +144,10 @@ const ConfigWhatsApp = () => {
                 config_id: META_CONFIG_ID,
                 response_type: 'code',
                 override_default_response_type: true,
-                extras: { sessionInfoVersion: '3', version: 'v4' }
+                // extras alinhado com o que o link direto da Meta gera de fato (confirmado
+                // pelo usuário que mostra a opção de coexistência) - "v3" e is_hosted_es:true
+                // são o que difere do nosso FB.login() de antes, que não mostrava a opção.
+                extras: { sessionInfoVersion: '3', version: 'v3', featureType: 'whatsapp_business_app_onboarding', is_hosted_es: true }
             });
         } catch (error) {
             setConectando(false);
