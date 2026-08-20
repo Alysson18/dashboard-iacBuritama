@@ -141,12 +141,20 @@ function MensagensCadastro() {
             return toastr.warning('Todos os campos devem ser preenchidos', "Atenção");
         }
 
+        // A Meta exige um exemplo real por variável {{n}} pra aprovar o template — sem isso
+        // ela rejeita. O painel já coletava esses exemplos mas nunca mandava pro backend.
+        const faltando = variaveis.filter(v => !exemplos[v] || !exemplos[v].trim());
+        if (faltando.length > 0) {
+            return toastr.warning(`Preencha um exemplo para: ${faltando.join(', ')}`, "Atenção");
+        }
+
         Loading.show('Aguarde...')
         api.post(`/templates`, {
             DESCRICAO: descricao,
             NOME_MODELO: nomeTemplate,
             CATEGORIA: tipo,
-            TEXTO_CONTEUDO: conteudoDaMensagem
+            TEXTO_CONTEUDO: conteudoDaMensagem,
+            EXEMPLOS: exemplos
         }).then(function (AxiosResponse) {
             Loading.hide();
             if (AxiosResponse.data.SUCCESS === true) {
