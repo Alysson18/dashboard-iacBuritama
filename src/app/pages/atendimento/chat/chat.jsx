@@ -28,6 +28,22 @@ function TicketChat() {
     const [operadores, setOperadores] = useState([]);
     const [transferTarget, setTransferTarget] = useState({ id_setor: '', id_operador: '' });
 
+    // --- Anexos (imagem/vídeo/documento) e gravação de áudio ---
+    const [showAttachMenu, setShowAttachMenu] = useState(false);
+    const [pendingFile, setPendingFile] = useState(null); // { file, previewUrl, tipo }
+    const [sendingAttachment, setSendingAttachment] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
+    const [recordingSeconds, setRecordingSeconds] = useState(0);
+    const [audioLevels, setAudioLevels] = useState(Array(24).fill(4));
+    const fileInputImagemRef = useRef(null);
+    const fileInputDocumentoRef = useRef(null);
+    const mediaRecorderRef = useRef(null);
+    const audioChunksRef = useRef([]);
+    const recordingIntervalRef = useRef(null);
+    const audioContextRef = useRef(null);
+    const levelAnimationRef = useRef(null);
+    const nivelMaximoRef = useRef(0);
+
     const decryptData = (encryptedData) => {
         if (!encryptedData) return "";
         const bytes = CryptoJS.AES.decrypt(encryptedData.toString(), 'Alysson-2025-IACBURITAMA');
@@ -106,6 +122,21 @@ function TicketChat() {
         scrollToBottom();
     }, [messages]);
 
+    // Limpa o preview de anexo pendente (evita vazar memória do createObjectURL) e a
+    // gravação em andamento se o operador sair da tela no meio do processo.
+    useEffect(() => {
+        return () => {
+            if (pendingFile?.previewUrl) URL.revokeObjectURL(pendingFile.previewUrl);
+            if (recordingIntervalRef.current) clearInterval(recordingIntervalRef.current);
+            if (levelAnimationRef.current) cancelAnimationFrame(levelAnimationRef.current);
+            if (audioContextRef.current) audioContextRef.current.close().catch(() => { });
+            if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+                mediaRecorderRef.current.stream.getTracks().forEach(t => t.stop());
+            }
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const isWindowExpired = () => {
         const lastClientMsg = [...messages].reverse().find(m => m.REMETENTE === 'CLIENTE');
         if (!lastClientMsg) return false;
@@ -114,6 +145,7 @@ function TicketChat() {
     };
 
     const expired = isWindowExpired();
+    const inputBloqueado = !wa_id || expired || ticketInfo?.STATUS === 'FECHADO' || !ticketInfo?.ID_OPERADOR;
 
     const handleCapture = async () => {
         Loading.show("Capturando...");
@@ -240,6 +272,199 @@ function TicketChat() {
         }
     };
 
+    // --- Anexos ---
+
+    function classificarTipoArquivo(file) {
+        if (file.type.startsWith('image/')) return 'IMAGE';
+        if (file.type.startsWith('video/')) return 'VIDEO';
+        if (file.type.startsWith('audio/')) return 'AUDIO';
+        return 'DOCUMENT';
+    }
+
+    function handleFilePicked(e) {
+        const file = e.target.files?.[0];
+        e.target.value = ''; // permite escolher o mesmo arquivo de novo depois
+        if (!file) return;
+
+        if (file.size > 25 * 1024 * 1024) {
+            toastr.warning('Arquivo maior que 25MB. Escolha um arquivo menor.', 'Atenção');
+            return;
+        }
+
+        const tipo = classificarTipoArquivo(file);
+        const previewUrl = (tipo === 'IMAGE' || tipo === 'VIDEO') ? URL.createObjectURL(file) : null;
+        setPendingFile({ file, previewUrl, tipo });
+        setShowAttachMenu(false);
+    }
+
+    function cancelPendingFile() {
+        if (pendingFile?.previewUrl) URL.revokeObjectURL(pendingFile.previewUrl);
+        setPendingFile(null);
+    }
+
+    async function enviarArquivo(file, legenda) {
+        setSendingAttachment(true);
+        try {
+            const formData = new FormData();
+            formData.append('arquivo', file);
+            formData.append('WA_ID', wa_id);
+            formData.append('LEGENDA', legenda || '');
+            formData.append('ID_OPERADOR', decryptData(sessionStorage.getItem('id_usuario')));
+
+            const res = await api.post(`/tickets/${decryptData(sessionStorage.getItem('ticket'))}/midia`, formData);
+
+            if (res.data.SUCCESS) {
+                setMessages(prev => [...prev, {
+                    ID_TICKET: decryptData(sessionStorage.getItem('ticket')),
+                    REMETENTE: 'OPERADOR',
+                    DATA_ENVIO: new Date().toISOString(),
+                    TEXTO: legenda || '',
+                    WAMID: res.data.WHATSAPP?.messages?.[0]?.id || null,
+                    TIPO_MENSAGEM: res.data.TIPO_MENSAGEM,
+                    MEDIA_URL: res.data.MEDIA_URL,
+                    MEDIA_NOME_ARQUIVO: res.data.MEDIA_NOME_ARQUIVO
+                }]);
+                scrollToBottom();
+            } else {
+                toastr.error(res.data.MESSAGE || 'Erro ao enviar arquivo');
+            }
+        } catch (error) {
+            toastr.error(error.response?.data?.MESSAGE || 'Erro ao enviar arquivo');
+        } finally {
+            setSendingAttachment(false);
+        }
+    }
+
+    async function handleSendPendingFile(e) {
+        e?.preventDefault();
+        if (!pendingFile || sendingAttachment) return;
+        const legenda = newMessage.trim();
+        const arquivo = pendingFile.file;
+        cancelPendingFile();
+        setNewMessage("");
+        await enviarArquivo(arquivo, legenda);
+    }
+
+    // --- Gravação de áudio ---
+
+    // Lê o volume do microfone em tempo real (Web Audio API) e alimenta as barrinhas do
+    // indicador de gravação — é só feedback visual, não interfere na gravação em si (o
+    // MediaRecorder grava a partir do mesmo stream, em paralelo).
+    async function iniciarBarrasDeNivel(stream) {
+        const AudioContextCls = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextCls) return;
+        const audioContext = new AudioContextCls();
+        // Depois de um "await" (getUserMedia), o navegador pode considerar que já saiu do
+        // gesto do usuário e criar o AudioContext direto em "suspended" — sem o resume(), o
+        // analyser nunca processa nada e as barras ficam retas mesmo com áudio real chegando.
+        if (audioContext.state === 'suspended') {
+            try { await audioContext.resume(); } catch (e) { /* segue mesmo assim */ }
+        }
+        const source = audioContext.createMediaStreamSource(stream);
+        const analyser = audioContext.createAnalyser();
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.6;
+        source.connect(analyser);
+        audioContextRef.current = audioContext;
+
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        const atualizar = () => {
+            analyser.getByteFrequencyData(dataArray);
+            const media = dataArray.reduce((acc, v) => acc + v, 0) / dataArray.length;
+            const nivel = Math.min(100, Math.max(6, (media / 255) * 100 * 2));
+            if (nivel > nivelMaximoRef.current) nivelMaximoRef.current = nivel;
+            setAudioLevels(prev => [...prev.slice(1), nivel]);
+            levelAnimationRef.current = requestAnimationFrame(atualizar);
+        };
+        levelAnimationRef.current = requestAnimationFrame(atualizar);
+    }
+
+    function pararBarrasDeNivel() {
+        if (levelAnimationRef.current) cancelAnimationFrame(levelAnimationRef.current);
+        levelAnimationRef.current = null;
+        if (audioContextRef.current) {
+            audioContextRef.current.close().catch(() => { });
+            audioContextRef.current = null;
+        }
+        setAudioLevels(Array(24).fill(4));
+    }
+
+    async function startRecording() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            // Chrome só grava em webm/opus; Firefox aceita ogg/opus direto. A Meta espera
+            // preferencialmente ogg/opus pra nota de voz — usamos o melhor disponível.
+            const mimeType = ['audio/ogg;codecs=opus', 'audio/webm;codecs=opus', 'audio/webm']
+                .find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || '';
+
+            const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+            audioChunksRef.current = [];
+
+            recorder.ondataavailable = (ev) => {
+                if (ev.data.size > 0) audioChunksRef.current.push(ev.data);
+            };
+
+            recorder.start();
+            mediaRecorderRef.current = recorder;
+            setIsRecording(true);
+            setRecordingSeconds(0);
+            nivelMaximoRef.current = 0;
+            recordingIntervalRef.current = setInterval(() => setRecordingSeconds(s => s + 1), 1000);
+            iniciarBarrasDeNivel(stream);
+
+            // Avisa cedo se o microfone parece mudo (nenhum nível relevante captado), em vez
+            // de só descobrir depois de mandar pro WhatsApp e testar no celular.
+            setTimeout(() => {
+                if (mediaRecorderRef.current?.state === 'recording' && nivelMaximoRef.current < 10) {
+                    toastr.warning('Não estamos captando som do microfone. Verifique se o microfone certo está selecionado (clique no cadeado ao lado do endereço > Configurações do site > Microfone) e se não está mudo no sistema.', 'Microfone parece mudo');
+                }
+            }, 2500);
+        } catch (e) {
+            toastr.error('Não foi possível acessar o microfone. Verifique a permissão do navegador.', 'Atenção');
+        }
+    }
+
+    // Some as UI de "gravando" (timer/estado/barras) na hora — mas SÓ para as tracks do
+    // microfone depois que o MediaRecorder confirmar (onstop) que já terminou de gravar. Parar
+    // a track antes disso corta a gravação no meio da finalização e gera um arquivo mudo/corrompido.
+    function encerrarUiDeGravacao() {
+        clearInterval(recordingIntervalRef.current);
+        pararBarrasDeNivel();
+        setIsRecording(false);
+        setRecordingSeconds(0);
+    }
+
+    function cancelRecording() {
+        if (!mediaRecorderRef.current) return;
+        const recorder = mediaRecorderRef.current;
+        recorder.onstop = () => {
+            recorder.stream.getTracks().forEach(t => t.stop());
+        };
+        recorder.stop();
+        encerrarUiDeGravacao();
+        audioChunksRef.current = [];
+    }
+
+    function finishAndSendRecording() {
+        if (!mediaRecorderRef.current) return;
+        const recorder = mediaRecorderRef.current;
+        recorder.onstop = async () => {
+            recorder.stream.getTracks().forEach(t => t.stop());
+            const blob = new Blob(audioChunksRef.current, { type: recorder.mimeType || 'audio/webm' });
+            const extensao = (recorder.mimeType || '').includes('ogg') ? 'ogg' : 'webm';
+            const arquivoAudio = new File([blob], `audio-${Date.now()}.${extensao}`, { type: blob.type });
+            await enviarArquivo(arquivoAudio, '');
+        };
+        recorder.stop();
+        encerrarUiDeGravacao();
+    }
+
+    function formatRecordingTime(totalSeconds) {
+        const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+        const s = (totalSeconds % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    }
+
     const addEmoji = (emoji) => {
         setNewMessage(prev => prev + emoji);
         setShowEmojiPicker(false);
@@ -284,6 +509,53 @@ function TicketChat() {
                 </span>
             );
         });
+    };
+
+    // Renderiza o conteúdo da bolha conforme o tipo (texto ou mídia)
+    const renderConteudoMensagem = (msg, displayText) => {
+        const tipo = msg.TIPO_MENSAGEM || 'TEXTO';
+
+        if (tipo === 'IMAGE') {
+            return (
+                <div className="chat-media">
+                    {msg.MEDIA_URL
+                        ? <img src={msg.MEDIA_URL} alt="Imagem enviada" className="chat-media-image" onClick={() => window.open(msg.MEDIA_URL, '_blank')} />
+                        : <div className="chat-media-indisponivel"><i className="bi bi-image"></i> Imagem indisponível</div>}
+                    {displayText && <div className="chat-text mt-1">{formatWhatsAppText(displayText)}</div>}
+                </div>
+            );
+        }
+        if (tipo === 'VIDEO') {
+            return (
+                <div className="chat-media">
+                    {msg.MEDIA_URL
+                        ? <video src={msg.MEDIA_URL} controls className="chat-media-video" />
+                        : <div className="chat-media-indisponivel"><i className="bi bi-camera-video"></i> Vídeo indisponível</div>}
+                    {displayText && <div className="chat-text mt-1">{formatWhatsAppText(displayText)}</div>}
+                </div>
+            );
+        }
+        if (tipo === 'AUDIO') {
+            return msg.MEDIA_URL
+                ? <audio src={msg.MEDIA_URL} controls className="chat-media-audio" />
+                : <div className="chat-media-indisponivel"><i className="bi bi-mic"></i> Áudio indisponível</div>;
+        }
+        if (tipo === 'DOCUMENT') {
+            return (
+                <a
+                    href={msg.MEDIA_URL || '#'}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`chat-media-document ${!msg.MEDIA_URL ? 'disabled' : ''}`}
+                    onClick={(e) => { if (!msg.MEDIA_URL) e.preventDefault(); }}
+                >
+                    <i className="bi bi-file-earmark-pdf-fill"></i>
+                    <span className="chat-media-document-nome">{msg.MEDIA_NOME_ARQUIVO || 'Documento'}</span>
+                    <i className="bi bi-download ms-2"></i>
+                </a>
+            );
+        }
+        return <div className="chat-text">{formatWhatsAppText(displayText)}</div>;
     };
 
     const conteudoHtml = (
@@ -376,15 +648,15 @@ function TicketChat() {
                                             <span>{new Date(msg.DATA_ENVIO).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
                                         </div>
                                     )}
-                                    <div 
+                                    <div
                                         id={`msg-${msg.WAMID}`}
-                                        className={`chat-bubble ${msg.REMETENTE === 'CLIENTE' ? 'cliente' : 'operador'}`}
-                                        onDoubleClick={() => { 
+                                        className={`chat-bubble ${msg.REMETENTE === 'CLIENTE' ? 'cliente' : 'operador'} ${msg.TIPO_MENSAGEM && msg.TIPO_MENSAGEM !== 'TEXTO' ? 'com-midia' : ''}`}
+                                        onDoubleClick={() => {
                                             setReplyingTo(msg);
                                             setTimeout(() => document.getElementById('chat-input-field')?.focus(), 100);
                                         }}>
 
-                                        <div className="bubble-reply-btn" onClick={() => { 
+                                        <div className="bubble-reply-btn" onClick={() => {
                                             setReplyingTo(msg);
                                             setTimeout(() => document.getElementById('chat-input-field')?.focus(), 100);
                                         }}>
@@ -398,9 +670,7 @@ function TicketChat() {
                                         )}
 
                                         {displayName && <div className="chat-operator-name text-primary mb-1" style={{ fontSize: '0.75rem' }}>{displayName}</div>}
-                                        <div className="chat-text">
-                                            {formatWhatsAppText(displayText)}
-                                        </div>
+                                        {renderConteudoMensagem(msg, displayText)}
                                         <span className="chat-time">
                                             {formatTime(msg.DATA_ENVIO)}
                                         </span>
@@ -421,27 +691,94 @@ function TicketChat() {
                         </div>
                     )}
 
-                    <form className="chat-input-container" onSubmit={handleSendMessage}>
-                        <div className="emoji-toggle" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>😀</div>
-                        {showEmojiPicker && (
-                            <div className="emoji-picker-custom">
-                                {emojis.map((emoji, idx) => (
-                                    <span key={idx} onClick={() => addEmoji(emoji)}>{emoji}</span>
-                                ))}
+                    {pendingFile && (
+                        <div className="attachment-preview-container">
+                            {pendingFile.tipo === 'IMAGE' && <img src={pendingFile.previewUrl} alt="Pré-visualização" className="attachment-preview-thumb" />}
+                            {pendingFile.tipo === 'VIDEO' && <video src={pendingFile.previewUrl} className="attachment-preview-thumb" muted />}
+                            {(pendingFile.tipo === 'DOCUMENT' || pendingFile.tipo === 'AUDIO') && (
+                                <div className="attachment-preview-icon"><i className="bi bi-file-earmark-fill"></i></div>
+                            )}
+                            <div className="attachment-preview-data">
+                                <strong>Anexo selecionado</strong>
+                                <p>{pendingFile.file.name}</p>
                             </div>
-                        )}
-                        <input
-                            id="chat-input-field"
-                            type="text"
-                            placeholder={!ticketInfo?.ID_OPERADOR ? "Capture o atendimento para digitar." : (expired ? "Janela de WhatsApp expirou (+24h)." : ticketInfo?.STATUS === 'FECHADO' ? "Atendimento encerrado." : (wa_id ? "Escreva uma mensagem..." : "WhatsApp ID não disponível."))}
-                            value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
-                            disabled={!wa_id || expired || ticketInfo?.STATUS === 'FECHADO' || !ticketInfo?.ID_OPERADOR}
-                        />
-                        <button type="submit" className='send-button' disabled={!wa_id || !newMessage.trim() || expired || ticketInfo?.STATUS === 'FECHADO' || !ticketInfo?.ID_OPERADOR}>
+                            <button className="btn-close-reply" onClick={cancelPendingFile} disabled={sendingAttachment}>&times;</button>
+                        </div>
+                    )}
 
-                        </button>
-                    </form>
+                    {isRecording && (
+                        <div className="recording-bar">
+                            <button type="button" className="recording-cancel" onClick={cancelRecording} title="Cancelar gravação">
+                                <i className="bi bi-trash"></i>
+                            </button>
+                            <div className="recording-indicator">
+                                <span className="recording-dot"></span>
+                                <div className="recording-bars-wrap">
+                                    {audioLevels.map((nivel, idx) => (
+                                        <span key={idx} className="recording-bar-item" style={{ height: `${nivel}%` }}></span>
+                                    ))}
+                                </div>
+                                <span className="recording-time">{formatRecordingTime(recordingSeconds)}</span>
+                            </div>
+                            <button type="button" className="recording-send" onClick={finishAndSendRecording} title="Enviar áudio" disabled={sendingAttachment}>
+                                <i className="bi bi-send-fill"></i>
+                            </button>
+                        </div>
+                    )}
+
+                    {!isRecording && (
+                        <form className="chat-input-container" onSubmit={pendingFile ? handleSendPendingFile : handleSendMessage}>
+                            <div className="emoji-toggle" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>😀</div>
+                            {showEmojiPicker && (
+                                <div className="emoji-picker-custom">
+                                    {emojis.map((emoji, idx) => (
+                                        <span key={idx} onClick={() => addEmoji(emoji)}>{emoji}</span>
+                                    ))}
+                                </div>
+                            )}
+
+                            <div className="attach-wrapper">
+                                <div className="attach-toggle" onClick={() => !inputBloqueado && setShowAttachMenu(!showAttachMenu)} title="Anexar">
+                                    <i className="bi bi-paperclip"></i>
+                                </div>
+                                {showAttachMenu && (
+                                    <div className="attach-menu">
+                                        <div className="attach-menu-item" onClick={() => fileInputImagemRef.current?.click()}>
+                                            <i className="bi bi-image-fill" style={{ color: '#7f66ff' }}></i>
+                                            <span>Fotos e vídeos</span>
+                                        </div>
+                                        <div className="attach-menu-item" onClick={() => fileInputDocumentoRef.current?.click()}>
+                                            <i className="bi bi-file-earmark-text-fill" style={{ color: '#5157ae' }}></i>
+                                            <span>Documento</span>
+                                        </div>
+                                    </div>
+                                )}
+                                <input type="file" accept="image/*,video/*" ref={fileInputImagemRef} style={{ display: 'none' }} onChange={handleFilePicked} />
+                                <input type="file" ref={fileInputDocumentoRef} style={{ display: 'none' }} onChange={handleFilePicked} />
+                            </div>
+
+                            <input
+                                id="chat-input-field"
+                                type="text"
+                                placeholder={
+                                    pendingFile ? "Adicione uma legenda (opcional)..." :
+                                        (!ticketInfo?.ID_OPERADOR ? "Capture o atendimento para digitar." : (expired ? "Janela de WhatsApp expirou (+24h)." : ticketInfo?.STATUS === 'FECHADO' ? "Atendimento encerrado." : (wa_id ? "Escreva uma mensagem..." : "WhatsApp ID não disponível.")))
+                                }
+                                value={newMessage}
+                                onChange={(e) => setNewMessage(e.target.value)}
+                                disabled={pendingFile ? sendingAttachment : inputBloqueado}
+                            />
+
+                            {(!pendingFile && !newMessage.trim()) ? (
+                                <button type="button" className='mic-button' disabled={inputBloqueado} onClick={startRecording} title="Gravar áudio">
+                                    <i className="bi bi-mic-fill"></i>
+                                </button>
+                            ) : (
+                                <button type="submit" className='send-button' disabled={pendingFile ? sendingAttachment : (!wa_id || !newMessage.trim() || expired || ticketInfo?.STATUS === 'FECHADO' || !ticketInfo?.ID_OPERADOR)}>
+                                </button>
+                            )}
+                        </form>
+                    )}
                 </div>
             </div>
 

@@ -462,3 +462,296 @@
     color: #0d6efd;
     transform: rotate(180deg);
 }
+
+/* --- Anexos (imagem/vídeo/documento) e microfone --- */
+
+.attach-wrapper {
+    position: relative;
+}
+
+.attach-toggle {
+    font-size: 22px;
+    padding: 0 8px;
+    cursor: pointer;
+    margin-bottom: 8px;
+    user-select: none;
+    color: #54656f;
+    display: flex;
+    align-items: center;
+}
+
+.attach-menu {
+    position: absolute;
+    bottom: 55px;
+    left: 0;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 -2px 14px rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+    z-index: 1000;
+    min-width: 190px;
+}
+
+.attach-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #333;
+    white-space: nowrap;
+    transition: background 0.15s;
+}
+
+.attach-menu-item:hover {
+    background-color: #f0f2f5;
+}
+
+.attach-menu-item i {
+    font-size: 1.2rem;
+}
+
+.mic-button {
+    margin-left: 10px;
+    margin-right: 10px;
+    border-radius: 25%;
+    width: 55px;
+    height: 35px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #00a884;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.mic-button:hover {
+    background-color: #008f68;
+}
+
+.mic-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.recording-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background-color: #dfdfdf;
+    border-top: 1px solid #ddd;
+    padding-bottom: env(safe-area-inset-bottom, 10px);
+}
+
+.recording-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: #333;
+    font-weight: 500;
+    flex: 1;
+    min-width: 0;
+}
+
+.recording-time {
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.recording-bars-wrap {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 24px;
+    flex: 1;
+    min-width: 0;
+}
+
+.recording-bar-item {
+    flex: 1;
+    max-width: 4px;
+    min-height: 4px;
+    border-radius: 2px;
+    background-color: #00a884;
+    transition: height 0.08s ease-out;
+}
+
+.recording-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #e74a3b;
+    animation: pulse-recording 1.2s infinite;
+}
+
+@keyframes pulse-recording {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.3;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.recording-cancel,
+.recording-send {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+}
+
+.recording-cancel {
+    background-color: #f1f1f1;
+    color: #e74a3b;
+}
+
+.recording-cancel:hover {
+    background-color: #e5e5e5;
+}
+
+.recording-send {
+    background-color: #00a884;
+    color: white;
+}
+
+.recording-send:hover {
+    background-color: #008f68;
+}
+
+.attachment-preview-container {
+    background: #f0f0f0;
+    border-left: 5px solid #00a884;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-top: 1px solid #ddd;
+}
+
+.attachment-preview-thumb {
+    width: 44px;
+    height: 44px;
+    object-fit: cover;
+    border-radius: 6px;
+    background: #333;
+}
+
+.attachment-preview-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 6px;
+    background: #00a884;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+}
+
+.attachment-preview-data {
+    flex: 1;
+    min-width: 0;
+}
+
+.attachment-preview-data strong {
+    font-size: 0.75rem;
+    color: #00a884;
+    display: block;
+}
+
+.attachment-preview-data p {
+    margin: 0;
+    color: #666;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70vw;
+}
+
+/* --- Mensagens de mídia dentro da bolha --- */
+
+.chat-bubble.com-midia {
+    padding: 6px;
+}
+
+.chat-media-image,
+.chat-media-video {
+    max-width: 260px;
+    max-height: 300px;
+    border-radius: 8px;
+    display: block;
+    cursor: pointer;
+}
+
+.chat-media-video {
+    cursor: default;
+}
+
+.chat-media-audio {
+    max-width: 260px;
+    display: block;
+}
+
+.chat-media-document {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 8px;
+    text-decoration: none;
+    color: #333;
+    font-size: 0.85rem;
+    max-width: 260px;
+}
+
+.chat-media-document:hover {
+    background: rgba(0, 0, 0, 0.08);
+    color: #00a884;
+}
+
+.chat-media-document.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.chat-media-document i.bi-file-earmark-pdf-fill {
+    font-size: 1.4rem;
+    color: #e74a3b;
+}
+
+.chat-media-document-nome {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-media-indisponivel {
+    padding: 10px;
+    color: #999;
+    font-style: italic;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
