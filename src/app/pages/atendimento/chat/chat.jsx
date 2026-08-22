@@ -391,7 +391,12 @@ function TicketChat() {
 
     async function startRecording() {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            // echoCancellation/noiseSuppression/autoGainControl ligados (padrão do Chrome) às
+            // vezes zeram o sinal captado em certas combinações de driver de áudio no Windows —
+            // gravação "sucesso" mas praticamente muda. Desativar evita esse processamento extra.
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+            });
             // Chrome só grava em webm/opus; Firefox aceita ogg/opus direto. A Meta espera
             // preferencialmente ogg/opus pra nota de voz — usamos o melhor disponível.
             const mimeType = ['audio/ogg;codecs=opus', 'audio/webm;codecs=opus', 'audio/webm']
