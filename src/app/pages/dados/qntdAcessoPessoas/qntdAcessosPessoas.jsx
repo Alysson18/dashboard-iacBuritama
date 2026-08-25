@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import NavBar from '../../../components/menu.jsx';
 import api from '../../../config/api.js';
 import Loading from '../../../components/loading/loading.js';
-import CryptoJS from 'crypto-js';
 import toastr from 'toastr';
 import 'toastr/build/toastr.min.css';
 import {
@@ -19,23 +18,15 @@ import {
     Legend,
 } from 'chart.js';
 
-import { Bar, Line, Pie } from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
 
 
 function QntdAcessosPessoas() {
     ChartJS.register(CategoryScale, LinearScale, PointElement,
         LineElement, BarElement, ArcElement, Title, Tooltip, Legend);
 
-    function decryptData(encryptedData) {
-        const bytes = CryptoJS.AES.decrypt(encryptedData.toString(), 'Alysson-2025-IACBURITAMA');
-        return bytes.toString(CryptoJS.enc.Utf8);
-    }
-
-
-
     const [dados, setDados] = useState([]);
-    const [pagina, setPagina] = useState(1);
-    const [controle, setControle] = useState(0);
+    const [controle] = useState(0);
 
     useEffect(() => {
         const fetchGetList = async () => {
@@ -61,9 +52,6 @@ function QntdAcessosPessoas() {
 
     const labels = Array.isArray(dados) ? dados.map(item => item.NOME) : [];
     const quanidadeAcesso = Array.isArray(dados) ? dados.map(item => item.ACESSOS) : [];
-
-    const data = new Date();
-
 
     const conteudoHtml =
         <div className="container mb-5 mt-0 pt-0 mt-0">

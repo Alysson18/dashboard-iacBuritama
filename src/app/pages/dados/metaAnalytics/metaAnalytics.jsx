@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import NavBar from '../../../components/menu.jsx';
 import api from '../../../config/api.js';
 import Loading from '../../../components/loading/loading.js';
-import CryptoJS from 'crypto-js';
 import toastr from 'toastr';
 import 'toastr/build/toastr.min.css';
 import {
@@ -26,16 +25,6 @@ function MetaAnalytics() {
 
     const [dados, setDados] = useState(null);
     const [controle, setControle] = useState(0);
-
-    const decryptData = (encryptedData) => {
-        if (!encryptedData) return "";
-        try {
-            const bytes = CryptoJS.AES.decrypt(encryptedData.toString(), 'Alysson-2025-IACBURITAMA');
-            return bytes.toString(CryptoJS.enc.Utf8);
-        } catch (e) {
-            return "";
-        }
-    };
 
     useEffect(() => {
         var date = new Date();

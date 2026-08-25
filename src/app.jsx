@@ -22,12 +22,15 @@ import Usuarios from './app/pages/cadastros/usuarios/usuarios.jsx';
 import MenuBot from './app/pages/cadastros/menuBot/MenuBot.jsx';
 import ConfigHorarios from './app/pages/config/ConfigHorarios.jsx';
 import ConfigWhatsApp from './app/pages/config/ConfigWhatsApp.jsx';
+import ConfigMensagens from './app/pages/config/ConfigMensagens.jsx';
+import LogsErros from './app/pages/config/LogsErros.jsx';
 import LinksPortal from './app/pages/cadastros/links/links.jsx';
 import MetaAnalytics from './app/pages/dados/metaAnalytics/metaAnalytics.jsx';
 import DashboardAcessos from './app/pages/dados/dashboardAcessos/dashboardAcessos.jsx';
 import MembrosAusentes from './app/pages/dados/membrosAusentes/membrosAusentes.jsx';
 import Aniversariantes from './app/pages/dados/aniversariantes/aniversariantes.jsx';
 import AcessosPorEvento from './app/pages/dados/acessosPorEvento/acessosPorEvento.jsx';
+import ResumoCadastros from './app/pages/dados/resumoCadastros/resumoCadastros.jsx';
 import MetricasAtendimento from './app/pages/atendimento/metricasAtendimento/metricasAtendimento.jsx';
 import Igrejas from './app/pages/cadastros/igrejas/igrejas.jsx';
 /*Soluções*/
@@ -126,11 +129,14 @@ function App() {
       <SecureRoute exact path='/app/cadastros/menu-bot' component={MenuBot} />
       <SecureRoute exact path='/app/configuracoes/horarios' component={ConfigHorarios} />
       <SecureRoute exact path='/app/configuracoes/whatsapp' component={ConfigWhatsApp} />
+      <SecureRoute exact path='/app/configuracoes/mensagens' component={ConfigMensagens} />
+      <SecureRoute exact path='/app/configuracoes/logs' component={LogsErros} />
       <SecureRoute exact path='/app/cadastros/links' component={LinksPortal} />
       <SecureRoute exact path='/app/dados/meta-analytics' component={MetaAnalytics} />
       <SecureRoute exact path='/app/dados/dashboard-acessos' component={DashboardAcessos} />
       <SecureRoute exact path='/app/dados/membros-ausentes' component={MembrosAusentes} />
       <SecureRoute exact path='/app/dados/aniversariantes' component={Aniversariantes} />
+      <SecureRoute exact path='/app/dados/resumo-cadastros' component={ResumoCadastros} />
       <SecureRoute exact path='/app/dados/acessos-por-evento' component={AcessosPorEvento} />
       <SecureRoute exact path='/app/atendimento/metricas' component={MetricasAtendimento} />
 

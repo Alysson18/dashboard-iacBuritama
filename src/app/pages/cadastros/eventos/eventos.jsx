@@ -13,6 +13,7 @@ function Eventos() {
     const [descricao, setDescricao] = useState('');
     const [pageCount, setpageCount] = useState(1);
     const [controle, setControle] = useState(0);
+    const [templates, setTemplates] = useState([]);
 
     function encryptData(data) {
         return CryptoJS.AES.encrypt(data.toString(), 'Alysson-2025-IACBURITAMA').toString();
@@ -53,6 +54,20 @@ function Eventos() {
         fetchGetList();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pagina, controle,])
+
+    useEffect(() => {
+        const fetchTemplates = async () => {
+            try {
+                const res = await api.get('/templates/lista?nome=&page=1&pageSize=100');
+                if (res.data.DATA) {
+                    setTemplates(res.data.DATA.filter(t => t.SITUACAO === 'APPROVED'));
+                }
+            } catch (error) {
+                toastr.error(error.message || error, "Erro ao buscar templates");
+            }
+        };
+        fetchTemplates();
+    }, [])
 
     const handlePageClick = async (data) => {
         let currentPage = data.selected + 1;
@@ -150,15 +165,6 @@ function Eventos() {
         document.getElementById('inputTemplate').value = '';
         sessionStorage.removeItem('id_eventos');
     }
-
-    const type = (navigator.userAgent.match(/Android/i)
-        || navigator.userAgent.match(/webOS/i)
-        || navigator.userAgent.match(/iPhone/i)
-        || navigator.userAgent.match(/iPad/i)
-        || navigator.userAgent.match(/iPod/i)
-        || navigator.userAgent.match(/BlackBerry/i)
-        || navigator.userAgent.match(/Windows Phone/i) ? 'cardMobileHome' : 'cardWebHome');
-
 
     const conteudoHtml = (
         <div className='body'>
@@ -302,10 +308,16 @@ function Eventos() {
                                         <div className="col-md-12 p-1">
                                             <b className="labelDescC">Template</b>
                                             <div className="input-group">
-                                                <input type="text"
-                                                    id='inputTemplate'
-                                                    className="form-control form-control-sm"
-                                                    aria-label="Template" />
+                                                <select id='inputTemplate'
+                                                    className="form-select form-select-sm select"
+                                                    aria-label="Template">
+                                                    <option value="">-- Selecione um template --</option>
+                                                    {templates.map(t => (
+                                                        <option key={t.ID_TEMPLATE} value={t.NOME_MODELO}>
+                                                            {t.DESCRICAO || t.NOME_MODELO}
+                                                        </option>
+                                                    ))}
+                                                </select>
                                             </div>
                                         </div>
 

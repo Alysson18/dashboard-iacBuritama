@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import NavBar from '../../../components/menu.jsx';
 import api from '../../../config/api.js';
 import Loading from '../../../components/loading/loading.js';
-import CryptoJS from 'crypto-js';
 import ReactPaginate from "react-paginate";
 import toastr from 'toastr';
 import 'toastr/build/toastr.min.css';
@@ -14,20 +13,10 @@ import autoTable from 'jspdf-autotable';
 function AcessoPessoas() {
 
     const [pessoa, setPessoa] = useState([]);
-    const [descricao, setDescricao] = useState('');
     const [pagina, setPagina] = useState(1);
     const [pageCount, setpageCount] = useState(1);
-    const [controle, setControle] = useState(0);
+    const [controle] = useState(0);
     const [origem, setOrigem] = useState('');
-
-    function encryptData(data) {
-        return CryptoJS.AES.encrypt(data.toString(), 'Alysson-2025-IACBURITAMA').toString();
-    }
-
-    function decryptData(encryptedData) {
-        const bytes = CryptoJS.AES.decrypt(encryptedData.toString(), 'Alysson-2025-IACBURITAMA');
-        return bytes.toString(CryptoJS.enc.Utf8);
-    }
 
     useEffect(() => {
         var date = new Date();
@@ -39,7 +28,7 @@ function AcessoPessoas() {
 
         document.getElementById('inputDataInicial').value = formatarData(primeiroDia);
         document.getElementById('inputDataFinal').value = formatarData(ultimoDia);
-    }, [''])
+    }, [])
 
 
     useEffect(() => {
@@ -67,17 +56,15 @@ function AcessoPessoas() {
             fetchGetList();
         }, 500)
 
-
+        // origem é aplicado manualmente pelo botão "Consultar" (BuscarNome), não recarrega
+        // sozinho quando o select muda.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pagina, controle])
 
     const handlePageClick = async (data) => {
         let currentPage = data.selected + 1;
         setPagina(currentPage)
     };
-
-    function alterarDescricao(event) {
-        setDescricao(event.target.value)
-    }
 
     function BuscarNome(value) {
         Loading.show("Aguarde....")
@@ -163,15 +150,6 @@ function AcessoPessoas() {
             Loading.hide();
         }
     }
-
-    const type = (navigator.userAgent.match(/Android/i)
-        || navigator.userAgent.match(/webOS/i)
-        || navigator.userAgent.match(/iPhone/i)
-        || navigator.userAgent.match(/iPad/i)
-        || navigator.userAgent.match(/iPod/i)
-        || navigator.userAgent.match(/BlackBerry/i)
-        || navigator.userAgent.match(/Windows Phone/i) ? 'cardMobileHome' : 'cardWebHome');
-
 
     const conteudoHtml = <div className='body'>
         <div className={`pt-2  mt-2`}>

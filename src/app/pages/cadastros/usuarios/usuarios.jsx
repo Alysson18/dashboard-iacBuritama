@@ -37,11 +37,14 @@ function Usuarios() {
         { key: 'MENSAGENS', label: 'Modelos de Mensagem' },
         { key: 'META_ANALYTICS', label: 'Estatísticas Meta' },
         { key: 'RELATORIOS', label: 'Relatórios' },
+        { key: 'RESUMO_CADASTROS', label: 'Resumo de Cadastros' },
         { key: 'USUARIOS', label: 'Gestão de Usuários' },
         { key: 'SETORES', label: 'Gestão de Setores' },
         { key: 'MENUBOT', label: 'Menu do WhatsApp' },
         { key: 'HORARIOS', label: 'Horários de Atendimento' },
         { key: 'WHATSAPP_CONFIG', label: 'Integração WhatsApp' },
+        { key: 'CONFIG_MENSAGENS', label: 'Configurações Gerais (Mensagens Automáticas)' },
+        { key: 'LOGS_SISTEMA', label: 'Logs do Sistema' },
         { key: 'LINKS_PORTAL', label: 'Links do Portal Wi-Fi' },
     ];
 
@@ -183,22 +186,6 @@ function Usuarios() {
                 toastr.error(res.data.MESSAGE, "Atenção");
             }
         }).catch(() => { Loading.hide(); toastr.error("Erro ao alterar usuário"); });
-    }
-
-    function Deletar(id) {
-        if (!window.confirm("Deseja excluir este usuário?")) return;
-        Loading.show('Aguarde...');
-        api.delete(`/usuarios/${id}`)
-            .then((res) => {
-                Loading.hide();
-                if (res.data.SUCCESS) {
-                    toastr.success("Usuário excluído com sucesso", "Sucesso");
-                    setControle(c => c + 1);
-                } else {
-                    toastr.error(res.data.MESSAGE, "Atenção");
-                }
-            })
-            .catch(() => { Loading.hide(); toastr.error("Erro ao excluir usuário"); });
     }
 
     function SalvarCadastro() {

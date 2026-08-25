@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { Link, Redirect } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 import { AuthContext } from '../../Context/auth';
 import './login.css';
 import api from '../../config/api';
@@ -37,8 +37,6 @@ function Login() {
     const [manterConectado, setManterConectado] = useState(false);
     const [Sucesso, setSucesso] = useState('Nulo');
     const { setLogado, setTipoUsuario, setIgrejaAtual, setIgrejasDisponiveis } = useContext(AuthContext);
-    const senhaHash = md5(senha)
-
 
     function encryptData(data) {
         return CryptoJS.AES.encrypt(data.toString(), 'Alysson-2025-IACBURITAMA').toString();

@@ -1,7 +1,5 @@
 import React from 'react';
 import NavBar from '../../../components/menu.jsx';
-import toastr from 'toastr';
-import 'toastr/build/toastr.min.css';
 
 function MensagensAgendamento() {
     const conteudoHtml = (

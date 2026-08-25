@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useContext } from 'react';
+import React, { useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../config/api.js'
 import './styles.css';
@@ -7,9 +7,7 @@ import CryptoJS from 'crypto-js';
 import toastr from 'toastr';
 import 'toastr/build/toastr.min.css';
 import md5 from 'md5';
-import PlanejamentoGastos from '../pages/relatorios/extratoMensalLista/extratoLista.jsx';
 import { socket } from '../config/socket.js';
-import { Redirect } from 'react-router-dom/cjs/react-router-dom.min.js';
 import { AuthContext } from '../Context/auth.jsx';
 import Logo from './Logo.jsx';
 
@@ -332,6 +330,7 @@ function Menu({ conteudo }) {
                                 <li><Link className="nav-link grafico" to="/app/dados/membros-ausentes">Membros Ausentes</Link></li>
                                 <li><Link className="nav-link grafico" to="/app/dados/aniversariantes">Aniversariantes do Mês</Link></li>
                                 <li><Link className="nav-link grafico" to="/app/dados/acessos-por-evento">Acessos por Evento</Link></li>
+                                {hasPermission('RESUMO_CADASTROS') && <li><Link className="nav-link grafico" to="/app/dados/resumo-cadastros">Resumo de Cadastros</Link></li>}
                                 <div className="dropdown-header">Sorteio</div>
                                 <li><Link className="nav-link sorteio" to="/app/acessos/sorteio">Sortear</Link></li>
                             </ul>
@@ -387,6 +386,8 @@ function Menu({ conteudo }) {
                             {hasPermission('LINKS_PORTAL') && <li><Link className="nav-link wifi" to="/app/cadastros/links">Links do Portal Wi-Fi</Link></li>}
                             {hasPermission('HORARIOS') && <li><Link className="nav-link horarios" to="/app/configuracoes/horarios">Horários de Atendimento</Link></li>}
                             {hasPermission('WHATSAPP_CONFIG') && <li><Link className="nav-link whatsapp" to="/app/configuracoes/whatsapp">Integração WhatsApp</Link></li>}
+                            {hasPermission('CONFIG_MENSAGENS') && <li><Link className="nav-link notificacoes" to="/app/configuracoes/mensagens">Configurações Gerais</Link></li>}
+                            {hasPermission('LOGS_SISTEMA') && <li><Link className="nav-link logserros" to="/app/configuracoes/logs">Logs do Sistema</Link></li>}
                         </ul>
                     </li>
                     <li className='mb-5'><Link className="nav-link logout" to="/" onClick={() => Logout()}>Logout</Link></li>

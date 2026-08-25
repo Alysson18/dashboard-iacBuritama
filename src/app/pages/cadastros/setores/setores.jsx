@@ -11,7 +11,6 @@ function Setores() {
     const [setores, setSetores] = useState([]);
     const [controle, setControle] = useState(0);
     const [movimentacao, setMovimentacao] = useState('C');
-    const [idEdit, setIdEdit] = useState(null);
 
     function encryptData(data) {
         return CryptoJS.AES.encrypt(data.toString(), 'Alysson-2025-IACBURITAMA').toString();
@@ -46,7 +45,6 @@ function Setores() {
     function LimparCampos() {
         document.getElementById('inputNomeSetor').value = '';
         document.getElementById('inputDescricaoSetor').value = '';
-        setIdEdit(null);
     }
 
     function Inserir() {
@@ -89,22 +87,6 @@ function Setores() {
                 }
             })
             .catch(() => { Loading.hide(); toastr.error("Erro ao alterar setor"); });
-    }
-
-    function Deletar(id) {
-        if (!window.confirm("Deseja excluir este setor?")) return;
-        Loading.show('Aguarde...');
-        api.delete(`/setores/${id}`)
-            .then((res) => {
-                Loading.hide();
-                if (res.data.SUCCESS) {
-                    toastr.success("Setor excluído com sucesso", "Sucesso");
-                    setControle(c => c + 1);
-                } else {
-                    toastr.error(res.data.MESSAGE, "Atenção");
-                }
-            })
-            .catch(() => { Loading.hide(); toastr.error("Erro ao excluir setor"); });
     }
 
     function SalvarCadastro() {

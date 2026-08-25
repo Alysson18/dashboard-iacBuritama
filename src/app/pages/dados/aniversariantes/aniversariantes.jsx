@@ -35,6 +35,9 @@ function Aniversariantes() {
             }
         };
         fetchList();
+        // mes só é aplicado quando o usuário clica em "Consultar" (setControle), não a cada
+        // troca do select.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [controle]);
 
     function exportarPDF() {

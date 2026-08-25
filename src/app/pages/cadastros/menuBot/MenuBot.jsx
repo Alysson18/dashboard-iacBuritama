@@ -9,7 +9,7 @@ const MenuBot = () => {
     const [menus, setMenus] = useState([]);
     const [controle, setControle] = useState(0);
     const [formData, setFormData] = useState({
-        ID: null, PARENT_ID: null, SLUG: '', TITULO: '', DESCRICAO: '', RESPOSTA_TEXTO: '', TIPO: 'RESPOSTA'
+        ID: null, PARENT_ID: null, SLUG: '', TITULO: '', DESCRICAO: '', RESPOSTA_TEXTO: '', TIPO: 'RESPOSTA', ORDEM: 0
     });
 
     useEffect(() => {
@@ -34,15 +34,11 @@ const MenuBot = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [controle]);
 
-    const loadMenus = async () => {
-        setControle(c => c + 1);
-    };
-
     const openModal = (item = null) => {
         if (item) {
             setFormData(item);
         } else {
-            setFormData({ ID: null, PARENT_ID: null, SLUG: '', TITULO: '', DESCRICAO: '', RESPOSTA_TEXTO: '', TIPO: 'RESPOSTA' });
+            setFormData({ ID: null, PARENT_ID: null, SLUG: '', TITULO: '', DESCRICAO: '', RESPOSTA_TEXTO: '', TIPO: 'RESPOSTA', ORDEM: 0 });
         }
         window.$('#modalMenuBot').modal('show');
     };
@@ -114,6 +110,7 @@ const MenuBot = () => {
                             <thead>
                                 <tr className="tabela">
                                     <th scope='col' className='codigo'>Código</th>
+                                    <th scope='col'>Ordem</th>
                                     <th scope='col' className='nome'>Título (WhatsApp)</th>
                                     <th scope='col'>Tipo</th>
                                     <th scope='col'>Hierarquia</th>
@@ -125,6 +122,7 @@ const MenuBot = () => {
                                 {menus.length > 0 ? (menus.map(item => (
                                     <tr key={item.ID}>
                                         <td className="codigo">{item.ID}</td>
+                                        <td><span className="badge bg-secondary">{item.ORDEM ?? 0}</span></td>
                                         <td className="text-start">
                                             {item.TITULO}
                                             <small className="text-muted">{item.DESCRICAO}</small>
@@ -153,7 +151,7 @@ const MenuBot = () => {
                                     </tr>
                                 ))) : (
                                     <tr>
-                                        <td colSpan="6" className="text-center">Nenhum menu cadastrado</td>
+                                        <td colSpan="7" className="text-center">Nenhum menu cadastrado</td>
                                     </tr>
                                 )}
                             </tbody>
@@ -198,7 +196,7 @@ const MenuBot = () => {
                                 </div>
 
                                 <div className="row">
-                                    <div className="col-md-6 mb-3">
+                                    <div className="col-md-4 mb-3">
                                         <b className="labelDescC">Tipo de Ação</b>
                                         <select className="form-select form-select-sm select"
                                             value={formData.TIPO}
@@ -207,7 +205,7 @@ const MenuBot = () => {
                                             <option value="SUBMENU">Abrir outro Menu</option>
                                         </select>
                                     </div>
-                                    <div className="col-md-6 mb-3">
+                                    <div className="col-md-4 mb-3">
                                         <b className="labelDescC">Pertence ao Menu (Pai)</b>
                                         <select className="form-select form-select-sm select"
                                             value={formData.PARENT_ID || ''}
@@ -217,6 +215,14 @@ const MenuBot = () => {
                                                 <option key={m.ID} value={m.ID}>{m.TITULO}</option>
                                             ))}
                                         </select>
+                                    </div>
+                                    <div className="col-md-4 mb-3">
+                                        <b className="labelDescC">Ordem de Exibição</b>
+                                        <input type="number" className="form-control form-control-sm"
+                                            value={formData.ORDEM ?? 0}
+                                            onChange={e => setFormData({ ...formData, ORDEM: parseInt(e.target.value) || 0 })}
+                                            placeholder="0" />
+                                        <small className="text-muted">Menor número aparece primeiro</small>
                                     </div>
                                 </div>
 

@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import NavBar from '../../../components/menu.jsx';
 import api from '../../../config/api.js';
 import Loading from '../../../components/loading/loading.js';
-import { io } from "socket.io-client";
 import toastr from 'toastr';
 import 'toastr/build/toastr.min.css';
 import './chat.css';
@@ -86,6 +85,8 @@ function TicketChat() {
         }
     };
 
+    const ticketIdAtual = decryptData(sessionStorage.getItem('ticket'));
+
     useEffect(() => {
         fetchTicketDetail();
         fetchData();
@@ -116,7 +117,11 @@ function TicketChat() {
             socket.off('conversa_ticket', handleNovaMensagem);
             socket.off('ticket_transferido', handleTransferNotification);
         };
-    }, [decryptData(sessionStorage.getItem('ticket'))]);
+        // fetchData/fetchTicketDetail são recriadas a cada render (não usam useCallback) —
+        // incluí-las aqui reexecutaria o efeito (e reassinaria os listeners do socket) em
+        // todo render. O que deve disparar o efeito de novo é só a troca do ticket em si.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [ticketIdAtual]);
 
     useEffect(() => {
         scrollToBottom();
@@ -491,7 +496,7 @@ function TicketChat() {
         return lines.map((line, lineIdx) => {
             const parts = [];
             // Regex para capturar *bold*, _italic_, ~strike~, `code`
-            const regex = /(\*([^*]+)\*)|(\_([^_]+)\_)|(~([^~]+)~)|(`([^`]+)`)/g;
+            const regex = /(\*([^*]+)\*)|(_([^_]+)_)|(~([^~]+)~)|(`([^`]+)`)/g;
             let lastIndex = 0;
             let match;
             while ((match = regex.exec(line)) !== null) {

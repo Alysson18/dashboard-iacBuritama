@@ -302,6 +302,14 @@ a[href*="#mensagens"]::before {
     content: "\f017" !important;
 }
 
+.notificacoes::before {
+    content: "\f0f3" !important;
+}
+
+.logserros::before {
+    content: "\f071" !important;
+}
+
 .wifi::before {
     content: "\f1eb" !important;
 }

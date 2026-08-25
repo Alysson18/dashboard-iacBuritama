@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import NavBar from '../../../components/menu.jsx';
 import api from '../../../config/api.js';
 import Loading from '../../../components/loading/loading.js';
-import CryptoJS from 'crypto-js';
 import ReactPaginate from "react-paginate";
 import toastr from 'toastr';
 import 'toastr/build/toastr.min.css';
@@ -45,15 +44,6 @@ function MensagensCadastro() {
             [variavel]: valorDigitado
         }));
     };
-    function encryptData(data) {
-        return CryptoJS.AES.encrypt(data.toString(), 'Alysson-2025-IACBURITAMA').toString();
-    }
-
-    function decryptData(encryptedData) {
-        const bytes = CryptoJS.AES.decrypt(encryptedData.toString(), 'Alysson-2025-IACBURITAMA');
-        return bytes.toString(CryptoJS.enc.Utf8);
-    }
-
     useEffect(() => {
         const fetchGetList = async () => {
             Loading.show("Aguarde....");
@@ -107,10 +97,6 @@ function MensagensCadastro() {
         let currentPage = data.selected + 1;
         setPagina(currentPage)
     };
-
-    function alterarDescricao(event) {
-        setDescricao(event.target.value)
-    }
 
     function Alterar() {
         // Nota: Atualmente seu server.ts não possui rota PUT para templates.
@@ -235,7 +221,7 @@ function MensagensCadastro() {
                                         templates?.map((CC) => (
                                             <tr key={CC.ID_TEMPLATE}>
                                                 <td>{CC.ID_TEMPLATE}</td>
-                                                <td>{CC.DESCRICAO.length > 50 ? CC.DESCRICAO.slice(0, 50) + '...' : CC.DESCRICAO}</td>
+                                                <td>{(CC.DESCRICAO || CC.NOME_MODELO || '').length > 50 ? (CC.DESCRICAO || CC.NOME_MODELO).slice(0, 50) + '...' : (CC.DESCRICAO || CC.NOME_MODELO || '-')}</td>
                                                 <td>{CC.TIPO}</td>
                                                 <td>{CC.NOME_MODELO}</td>
                                                 <td>{CC.SITUACAO}</td>
