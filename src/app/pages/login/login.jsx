@@ -9,6 +9,7 @@ import CryptoJS from 'crypto-js';
 import toastr from 'toastr';
 import 'toastr/build/toastr.min.css';
 import Logo from '../../components/Logo.jsx';
+import packageJson from '../../../../package.json';
 
 
 toastr.options = {
@@ -192,7 +193,7 @@ function Login() {
                     <Link to="/app/esquecisenha" className="mx-3">Esqueci Senha</Link>
                 </div> */}
                 <footer className="mt-5 mb-4 text-white">
-                    <label className='text-white'> Versão: 0.4.3</label> <br />
+                    <label className='text-white'> Versão: {packageJson.version}</label> <br />
                     &copy;Desenvolvido Por <a href="https://softwareplus.com.br" className="login-links text-white">SoftwarePlus </a></footer>
 
             </form >
