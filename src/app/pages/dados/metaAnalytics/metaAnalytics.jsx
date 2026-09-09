@@ -109,14 +109,14 @@ function MetaAnalytics() {
                             <div className="card shadow-sm  p-3 h-100" style={{ borderLeft: '5px solid #4e73df' }}>
                                 <span className="text-primary text-uppercase fw-bold" style={{ fontSize: '11px' }}>Custo Total (BRL)</span>
                                 <h5 className="fw-bold mb-0">R$ {dados.cost_brl}</h5>
-                                <small className="text-muted" style={{ fontSize: '10px' }}>Cotação: {dados.dollar_rate}</small>
+                                <small className="text-muted" style={{ fontSize: '10px' }}>{dados.currency === 'BRL' ? 'Valor Base Meta' : `Cotação: ${dados.dollar_rate}`}</small>
                             </div>
                         </div>
                         <div className="col-md-4 mb-2">
                             <div className="card shadow-sm  p-3 h-100" style={{ borderLeft: '5px solid #1cc88a' }}>
                                 <span className="text-success text-uppercase fw-bold" style={{ fontSize: '11px' }}>Custo Total (USD)</span>
                                 <h5 className="fw-bold mb-0">US$ {dados.cost_usd}</h5>
-                                <small className="text-muted" style={{ fontSize: '10px' }}>Valor Base Meta</small>
+                                <small className="text-muted" style={{ fontSize: '10px' }}>{dados.currency === 'BRL' ? `Cotação: ${dados.dollar_rate}` : 'Valor Base Meta'}</small>
                             </div>
                         </div>
                         <div className="col-md-4 mb-2">
