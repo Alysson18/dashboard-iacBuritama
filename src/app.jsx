@@ -5,6 +5,7 @@ import CryptoJS from 'crypto-js';
 
 /* Paginas */
 import login from './app/pages/login/login.jsx';
+import Site from './app/pages/site/site.jsx';
 import home from './app/pages/home/home.jsx';
 import Pessoas from './app/pages/cadastros/pessoas/pessoas.jsx';
 import QntdAcessoPessoas from './app/pages/dados/qntdAcessoPessoas/qntdAcessosPessoas.jsx'
@@ -72,7 +73,7 @@ if (expiracaoCripto) {
 function SecureRoute({ ...params }) {
   const { logado } = useContext(AuthContext);
   if (!logado) {
-    return <Redirect to='/' />
+    return <Redirect to='/login' />
   }
   else {
     return <Route {...params} />
@@ -97,7 +98,7 @@ function LoginRoute({ ...params }) {
 function SistemaRoute({ ...params }) {
   const { logado, tipoUsuario } = useContext(AuthContext);
   if (!logado) {
-    return <Redirect to='/' />
+    return <Redirect to='/login' />
   }
   else if (tipoUsuario !== 'SISTEMA') {
     return <Redirect to='/app/home' />
@@ -110,7 +111,8 @@ function SistemaRoute({ ...params }) {
 function App() {
   return <BrowserRouter>
     <Switch>
-      <LoginRoute exact path='/' component={login} />
+      <Route exact path='/' component={Site} />
+      <LoginRoute exact path='/login' component={login} />
       <SecureRoute exact path='/app/home' component={home} />
       <SecureRoute exact path='/app/cadastros/pessoas' component={Pessoas} />
       <SecureRoute exact path='/app/cadastros/eventos' component={Eventos} />
@@ -140,7 +142,7 @@ function App() {
       <SecureRoute exact path='/app/dados/acessos-por-evento' component={AcessosPorEvento} />
       <SecureRoute exact path='/app/atendimento/metricas' component={MetricasAtendimento} />
 
-      <LoginRoute exact path='/*' component={login} />
+      <Route path='/*' component={Site} />
     </Switch>
   </BrowserRouter>;
 }

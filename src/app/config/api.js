@@ -63,12 +63,12 @@ api.interceptors.response.use(response => {
     if (error.response && error.response.status === 401) {
         // Evita loop: só limpa/redireciona se ainda não estivermos na tela de login
         // e se de fato havia uma sessão pra derrubar.
-        const jaNaLogin = window.location.pathname === '/';
+        const jaNaLogin = window.location.pathname === '/login';
         const tinhaSessao = sessionStorage.getItem('logado') || localStorage.getItem('logado');
         if (!jaNaLogin && tinhaSessao) {
             sessionStorage.clear();
             localStorage.clear();
-            window.location.href = '/';
+            window.location.href = '/login';
         }
     }
     return Promise.reject(error);

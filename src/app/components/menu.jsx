@@ -40,7 +40,7 @@ function Menu({ conteudo }) {
         socket.disconnect();
         sessionStorage.clear();
         localStorage.clear();
-        window.location.href = '/';
+        window.location.href = '/login';
     }
 
 
@@ -390,7 +390,7 @@ function Menu({ conteudo }) {
                             {hasPermission('LOGS_SISTEMA') && <li><Link className="nav-link logserros" to="/app/configuracoes/logs">Logs do Sistema</Link></li>}
                         </ul>
                     </li>
-                    <li className='mb-5'><Link className="nav-link logout" to="/" onClick={() => Logout()}>Logout</Link></li>
+                    <li className='mb-5'><Link className="nav-link logout" to="/login" onClick={() => Logout()}>Logout</Link></li>
                 </ul>
             </nav >
 
