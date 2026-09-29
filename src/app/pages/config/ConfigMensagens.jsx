@@ -5,8 +5,19 @@ import Loading from '../../components/loading/loading.js';
 import toastr from 'toastr';
 import 'toastr/build/toastr.min.css';
 
+const DIAS_SEMANA = [
+    { valor: 0, rotulo: 'Dom' },
+    { valor: 1, rotulo: 'Seg' },
+    { valor: 2, rotulo: 'Ter' },
+    { valor: 3, rotulo: 'Qua' },
+    { valor: 4, rotulo: 'Qui' },
+    { valor: 5, rotulo: 'Sex' },
+    { valor: 6, rotulo: 'Sáb' },
+];
+const TODOS_OS_DIAS = DIAS_SEMANA.map(d => d.valor);
+
 const ConfigMensagens = () => {
-    const [config, setConfig] = useState({ ENVIAR_MSG_CHECKIN: false, ENVIAR_MSG_ANIVERSARIO: false, TEMPLATE_ANIVERSARIO: '' });
+    const [config, setConfig] = useState({ ENVIAR_MSG_CHECKIN: false, ENVIAR_MSG_ANIVERSARIO: false, TEMPLATE_ANIVERSARIO: '', DIAS_SEMANA_MSG_CHECKIN: TODOS_OS_DIAS });
     const [templates, setTemplates] = useState([]);
     const [controle, setControle] = useState(0);
 
@@ -16,10 +27,14 @@ const ConfigMensagens = () => {
             try {
                 const res = await api.get('/config/mensagens');
                 if (res.data.SUCCESS) {
+                    const diasSalvos = res.data.DATA?.DIAS_SEMANA_MSG_CHECKIN;
                     setConfig({
                         ENVIAR_MSG_CHECKIN: !!res.data.DATA?.ENVIAR_MSG_CHECKIN,
                         ENVIAR_MSG_ANIVERSARIO: !!res.data.DATA?.ENVIAR_MSG_ANIVERSARIO,
                         TEMPLATE_ANIVERSARIO: res.data.DATA?.TEMPLATE_ANIVERSARIO || '',
+                        DIAS_SEMANA_MSG_CHECKIN: diasSalvos
+                            ? diasSalvos.split(',').filter(d => d !== '').map(d => parseInt(d, 10))
+                            : TODOS_OS_DIAS,
                     });
                 }
             } catch (error) {
@@ -31,6 +46,16 @@ const ConfigMensagens = () => {
         fetchData();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [controle]);
+
+    function alternarDiaSemana(dia) {
+        setConfig((atual) => {
+            const jaSelecionado = atual.DIAS_SEMANA_MSG_CHECKIN.includes(dia);
+            const novosDias = jaSelecionado
+                ? atual.DIAS_SEMANA_MSG_CHECKIN.filter(d => d !== dia)
+                : [...atual.DIAS_SEMANA_MSG_CHECKIN, dia].sort();
+            return { ...atual, DIAS_SEMANA_MSG_CHECKIN: novosDias };
+        });
+    }
 
     useEffect(() => {
         const fetchTemplates = async () => {
@@ -47,9 +72,17 @@ const ConfigMensagens = () => {
     }, []);
 
     const handleSave = async () => {
+        if (config.ENVIAR_MSG_CHECKIN && config.DIAS_SEMANA_MSG_CHECKIN.length === 0) {
+            toastr.warning("Selecione ao menos um dia da semana pra mensagem de boas-vindas (ou desligue o envio). Mensagens de evento continuam disparando normalmente.", "Atenção");
+            return;
+        }
+
         Loading.show("Salvando configurações...");
         try {
-            const res = await api.put('/config/mensagens', config);
+            const res = await api.put('/config/mensagens', {
+                ...config,
+                DIAS_SEMANA_MSG_CHECKIN: config.DIAS_SEMANA_MSG_CHECKIN.join(','),
+            });
             if (res.data.SUCCESS) {
                 toastr.success("Configurações atualizadas com sucesso!");
                 setControle(prev => prev + 1);
@@ -85,6 +118,25 @@ const ConfigMensagens = () => {
                                         checked={config.ENVIAR_MSG_CHECKIN}
                                         onChange={(e) => setConfig({ ...config, ENVIAR_MSG_CHECKIN: e.target.checked })} />
                                 </div>
+                            </div>
+                            <div className="mt-3 pt-3 border-top">
+                                <b className="labelDescC d-block mb-2">Dias da semana em que pode enviar</b>
+                                <div className="d-flex flex-wrap gap-2">
+                                    {DIAS_SEMANA.map((dia) => (
+                                        <React.Fragment key={dia.valor}>
+                                            <input type="checkbox" className="btn-check" id={`diaSemana${dia.valor}`}
+                                                autoComplete="off" disabled={!config.ENVIAR_MSG_CHECKIN}
+                                                checked={config.DIAS_SEMANA_MSG_CHECKIN.includes(dia.valor)}
+                                                onChange={() => alternarDiaSemana(dia.valor)} />
+                                            <label className="btn btn-outline-primary btn-sm" htmlFor={`diaSemana${dia.valor}`}>
+                                                {dia.rotulo}
+                                            </label>
+                                        </React.Fragment>
+                                    ))}
+                                </div>
+                                <small className="text-muted d-block mt-2">
+                                    Vale só pra essa mensagem genérica. Se tiver um evento cadastrado pro dia, a mensagem do evento é enviada sempre, independente dos dias marcados aqui.
+                                </small>
                             </div>
                         </div>
 
