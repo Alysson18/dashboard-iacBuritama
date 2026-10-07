@@ -103,27 +103,47 @@ function MetaAnalytics() {
 
             {dados && (
                 <div className="container-fluid px-3">
+                    {dados.cost_source === 'ESTIMADO' && (
+                        <div className="alert alert-warning py-2 small text-center">
+                            A Meta não informou o custo desta conta (comum quando o faturamento é feito pela linha de crédito de um parceiro).
+                            Os valores abaixo são uma <b>estimativa</b> calculada pelos volumes de mensagens cobradas × tabela de preços da Meta em Reais.
+                        </div>
+                    )}
+                    {dados.cost_source === 'SEM_DADOS' && (
+                        <div className="alert alert-secondary py-2 small text-center">
+                            A Meta não retornou nenhum dado de mensagens para o período selecionado.
+                        </div>
+                    )}
+
                     {/* Principais Indicadores */}
                     <div className="row mb-3 text-center gx-3">
                         <div className="col-md-4 mb-2">
                             <div className="card shadow-sm  p-3 h-100" style={{ borderLeft: '5px solid #4e73df' }}>
-                                <span className="text-primary text-uppercase fw-bold" style={{ fontSize: '11px' }}>Custo Total (BRL)</span>
+                                <span className="text-primary text-uppercase fw-bold" style={{ fontSize: '11px' }}>Custo Total (BRL){dados.cost_source === 'ESTIMADO' ? ' — Estimado' : ''}</span>
                                 <h5 className="fw-bold mb-0">R$ {dados.cost_brl}</h5>
-                                <small className="text-muted" style={{ fontSize: '10px' }}>{dados.currency === 'BRL' ? 'Valor Base Meta' : `Cotação: ${dados.dollar_rate}`}</small>
+                                <small className="text-muted" style={{ fontSize: '10px' }}>
+                                    {dados.cost_source === 'ESTIMADO'
+                                        ? 'Tabela de preços Meta (BRL)'
+                                        : (dados.currency === 'BRL' ? 'Valor Base Meta' : `Cotação: ${dados.dollar_rate}`)}
+                                </small>
                             </div>
                         </div>
                         <div className="col-md-4 mb-2">
                             <div className="card shadow-sm  p-3 h-100" style={{ borderLeft: '5px solid #1cc88a' }}>
-                                <span className="text-success text-uppercase fw-bold" style={{ fontSize: '11px' }}>Custo Total (USD)</span>
+                                <span className="text-success text-uppercase fw-bold" style={{ fontSize: '11px' }}>Custo Total (USD){dados.cost_source === 'ESTIMADO' ? ' — Estimado' : ''}</span>
                                 <h5 className="fw-bold mb-0">US$ {dados.cost_usd}</h5>
-                                <small className="text-muted" style={{ fontSize: '10px' }}>{dados.currency === 'BRL' ? `Cotação: ${dados.dollar_rate}` : 'Valor Base Meta'}</small>
+                                <small className="text-muted" style={{ fontSize: '10px' }}>
+                                    {dados.cost_source === 'ESTIMADO' || dados.currency === 'BRL' ? `Cotação: ${dados.dollar_rate}` : 'Valor Base Meta'}
+                                </small>
                             </div>
                         </div>
                         <div className="col-md-4 mb-2">
                             <div className="card shadow-sm  p-3 h-100" style={{ borderLeft: '5px solid #36b9cc' }}>
-                                <span className="text-info text-uppercase fw-bold" style={{ fontSize: '11px' }}>Conversas</span>
+                                <span className="text-info text-uppercase fw-bold" style={{ fontSize: '11px' }}>Mensagens</span>
                                 <h5 className="fw-bold mb-0">{dados.total_conversations}</h5>
-                                <small className="text-muted" style={{ fontSize: '10px' }}>Total no Período</small>
+                                <small className="text-muted" style={{ fontSize: '10px' }}>
+                                    Total no Período{dados.free_volume ? ` (${dados.free_volume} gratuitas)` : ''}
+                                </small>
                             </div>
                         </div>
                     </div>

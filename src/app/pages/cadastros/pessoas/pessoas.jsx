@@ -78,6 +78,7 @@ function Pessoas() {
                 MAC: document.getElementById('inputMAC').value,
                 MEMBRO: document.getElementById('inputMembro').value,
                 SITUACAO: document.getElementById('inputSituacao').value,
+                DATA_NASCIMENTO: document.getElementById('inputNascimento').value || null,
                 ID_PESSOA: decryptData(sessionStorage.getItem('id_pessoa'))
             }).then(function (AxiosResponse) {
                 Loading.hide();
@@ -130,7 +131,8 @@ function Pessoas() {
                 TELEFONE: document.getElementById('inputTelefone').value,
                 MAC: document.getElementById('inputMAC').value,
                 ACEITOU_TERMOS: "S",
-                MEMBRO: document.getElementById('inputMAC').value
+                MEMBRO: document.getElementById('inputMembro').value,
+                DATA_NASCIMENTO: document.getElementById('inputNascimento').value || null
             }).then(function (AxiosResponse) {
                 Loading.hide();
                 if (AxiosResponse.data.SUCCESS === true) {
@@ -169,6 +171,7 @@ function Pessoas() {
         document.getElementById('inputNomeCompleto').value = '';
         document.getElementById('inputTelefone').value = '';
         document.getElementById('inputMAC').value = '';
+        document.getElementById('inputNascimento').value = '';
 
         sessionStorage.removeItem('id_pessoa');
     }
@@ -220,6 +223,7 @@ function Pessoas() {
                                 <th className='nome' scope="col">Nome Completo</th>
                                 <th className='nome' scope="col">Telefone</th>
                                 <th className='nome' scope="col">Tipo Pessoa</th>
+                                <th className='nome' scope="col">Nascimento</th>
                                 <th className='situacao' scope="col">Situação</th>
                                 <th className='nome' scope="col">Data Cadastro</th>
                                 <th className='delete' scope="col"></th>
@@ -234,6 +238,7 @@ function Pessoas() {
                                         <td>{CC.NOME.length > 50 ? CC.NOME.slice(0, 50) + '...' : CC.NOME}</td>
                                         <td>{Mask.telefone(CC.TELEFONE)}</td>
                                         <td>{(CC.MEMBRO === 'S') ? 'Membro' : 'Visitante'}</td>
+                                        <td>{CC.NASCIMENTO_FORMATADO || '-'}</td>
                                         <td>{CC.SITUACAO === 'A' ? 'Ativo' : 'Inativo'}</td>
                                         <td>{CC.DATA_CADASTRO}</td>
                                         <td onClick={() => {
@@ -249,6 +254,7 @@ function Pessoas() {
                                             document.getElementById('inputNomeCompleto').value = CC.NOME;
                                             document.getElementById('inputTelefone').value = CC.TELEFONE;
                                             document.getElementById('inputMAC').value = CC.MAC;
+                                            document.getElementById('inputNascimento').value = CC.NASCIMENTO || '';
                                             document.getElementById('inputSituacao').value = CC.SITUACAO;
                                             document.getElementById('inputMembro').value = (CC.MEMBRO === 'S') ? 'S' : 'N';
                                             window.$('#modalCadastro').modal('show');
@@ -261,7 +267,7 @@ function Pessoas() {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="8" className="text-center">Nenhuma pessoa encontrada</td>
+                                    <td colSpan="9" className="text-center">Nenhuma pessoa encontrada</td>
                                 </tr>
 
                             )
@@ -336,6 +342,16 @@ function Pessoas() {
                                                 id='inputMAC'
                                                 className="form-control form-control-sm"
                                                 aria-label="Email" />
+                                        </div>
+                                    </div>
+
+                                    <div className="col-md-6 p-1">
+                                        <b className="labelDescC">Data de Nascimento</b>
+                                        <div className="input-group">
+                                            <input type="date"
+                                                id='inputNascimento'
+                                                className="form-control form-control-sm"
+                                                aria-label="Data de Nascimento" />
                                         </div>
                                     </div>
 
