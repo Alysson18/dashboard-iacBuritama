@@ -38,7 +38,7 @@ const LinksPortal = () => {
         if (item) {
             setFormData({ ...item, COR: item.COR || COR_PADRAO });
         } else {
-            setFormData({ ID: null, TITULO: '', URL: '', COR: COR_PADRAO, ORDEM: links.length, ATIVO: true });
+            setFormData({ ID: null, TITULO: '', URL: '', COR: COR_PADRAO, ORDEM: links.length + 1, ATIVO: true });
         }
         window.$('#modalLinkPortal').modal('show');
     };
@@ -53,13 +53,14 @@ const LinksPortal = () => {
 
         Loading.show("Salvando...");
         try {
-            if (formData.ID) {
-                await api.put(`/links/${formData.ID}`, payload);
-                toastr.success("Link atualizado com sucesso!");
-            } else {
-                await api.post('/links', payload);
-                toastr.success("Link cadastrado com sucesso!");
+            const res = formData.ID
+                ? await api.put(`/links/${formData.ID}`, payload)
+                : await api.post('/links', payload);
+            if (!res.data.SUCCESS) {
+                toastr.error(res.data.MESSAGE?.message || res.data.MESSAGE || "Erro ao salvar link");
+                return;
             }
+            toastr.success(formData.ID ? "Link atualizado com sucesso!" : "Link cadastrado com sucesso!");
             window.$('#modalLinkPortal').modal('hide');
             setControle(prev => prev + 1);
         } catch (e) {
@@ -176,9 +177,10 @@ const LinksPortal = () => {
                                     </div>
                                     <div className="col-md-4 mb-3">
                                         <b className="labelDescC">Ordem</b>
-                                        <input type="number" className="form-control form-control-sm"
+                                        <input type="number" min={1} className="form-control form-control-sm"
                                             value={formData.ORDEM}
                                             onChange={e => setFormData({ ...formData, ORDEM: parseInt(e.target.value) || 0 })} />
+                                        <small className="text-muted">Os demais links são reordenados automaticamente.</small>
                                     </div>
                                 </div>
 
