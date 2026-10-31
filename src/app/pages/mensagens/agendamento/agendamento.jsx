@@ -6,6 +6,7 @@ import toastr from 'toastr';
 import 'toastr/build/toastr.min.css';
 
 const ROTULO_TIPO_PESSOA = { S: 'Membros', N: 'Visitantes', T: 'Todos' };
+const DIAS_SEMANA = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
 const BADGE_STATUS = {
     PENDENTE: 'bg-warning text-dark',
     ENVIADO: 'bg-success',
@@ -26,6 +27,8 @@ function MensagensAgendamento() {
     const [templateSelecionado, setTemplateSelecionado] = useState('');
     const [data, setData] = useState('');
     const [hora, setHora] = useState('');
+    const [recorrencia, setRecorrencia] = useState('');
+    const [primeiraConexaoDia, setPrimeiraConexaoDia] = useState('');
 
     useEffect(() => {
         const fetchAgendamentos = async () => {
@@ -68,6 +71,14 @@ function MensagensAgendamento() {
         setTemplateSelecionado('');
         setData('');
         setHora('');
+        setRecorrencia('');
+        setPrimeiraConexaoDia('');
+    }
+
+    function AlterarPrimeiraConexao(valor) {
+        setPrimeiraConexaoDia(valor);
+        // Primeira conexão só faz sentido para visitantes
+        if (valor !== '') setTipoPessoa('N');
     }
 
     function AbrirNovo() {
@@ -94,6 +105,8 @@ function MensagensAgendamento() {
             NOME_MODELO: templateSelecionado,
             DATA: data,
             HORA: hora,
+            RECORRENCIA: recorrencia || null,
+            PRIMEIRA_CONEXAO_DIA: primeiraConexaoDia,
         }).then(function (AxiosResponse) {
             Loading.hide();
             if (AxiosResponse.data.SUCCESS === true) {
@@ -133,6 +146,9 @@ function MensagensAgendamento() {
         return 'Todas as idades';
     }
 
+    // Dia da semana da data escolhida (T12:00 evita voltar um dia por fuso)
+    const diaSemanaDisparo = data ? DIAS_SEMANA[new Date(`${data}T12:00:00`).getDay()] : '';
+
     const agendamentosFiltrados = agendamentos.filter((item) => {
         if (!busca) return true;
         const alvo = `${item.DESCRICAO || ''} ${item.NOME_MODELO || ''}`.toLowerCase();
@@ -166,6 +182,7 @@ function MensagensAgendamento() {
                                     <th scope="col">Descrição</th>
                                     <th scope="col">Mensagem</th>
                                     <th scope="col">Data/Hora Agendada</th>
+                                    <th scope="col">Recorrência</th>
                                     <th scope="col">Público</th>
                                     <th scope="col">Faixa Etária</th>
                                     <th scope="col">Status</th>
@@ -180,13 +197,21 @@ function MensagensAgendamento() {
                                             <td>{item.DESCRICAO || '-'}</td>
                                             <td>{item.NOME_MODELO}</td>
                                             <td>{item.DATA_HORA_FORMATADA}</td>
-                                            <td>{ROTULO_TIPO_PESSOA[item.TIPO_PESSOA] || item.TIPO_PESSOA}</td>
+                                            <td>{item.RECORRENCIA === 'SEMANAL' ? 'Semanal' : 'Única'}</td>
+                                            <td>
+                                                {ROTULO_TIPO_PESSOA[item.TIPO_PESSOA] || item.TIPO_PESSOA}
+                                                {item.PRIMEIRA_CONEXAO_DIA !== null && item.PRIMEIRA_CONEXAO_DIA !== undefined && (
+                                                    <div className="small text-muted">
+                                                        1ª conexão: {DIAS_SEMANA[item.PRIMEIRA_CONEXAO_DIA]}
+                                                    </div>
+                                                )}
+                                            </td>
                                             <td>{descreverFaixaEtaria(item)}</td>
                                             <td>
                                                 <span className={`badge ${BADGE_STATUS[item.STATUS] || 'bg-secondary'}`}>
                                                     {item.STATUS}
                                                 </span>
-                                                {item.STATUS !== 'PENDENTE' && item.TOTAL_DESTINATARIOS != null && (
+                                                {item.TOTAL_DESTINATARIOS != null && (
                                                     <div className="small text-muted mt-1">
                                                         {item.TOTAL_ENVIADOS ?? 0}/{item.TOTAL_DESTINATARIOS} enviada(s)
                                                     </div>
@@ -202,7 +227,7 @@ function MensagensAgendamento() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="8" className="text-center">Nenhum agendamento encontrado</td>
+                                        <td colSpan="9" className="text-center">Nenhum agendamento encontrado</td>
                                     </tr>
                                 )}
                             </tbody>
@@ -235,12 +260,27 @@ function MensagensAgendamento() {
                                         <div className="col-md-12 p-1">
                                             <b className="labelDescC">Público (tipo de pessoa)</b>
                                             <select className="form-select form-select-sm select"
-                                                value={tipoPessoa} onChange={(e) => setTipoPessoa(e.target.value)}>
+                                                value={tipoPessoa} disabled={primeiraConexaoDia !== ''}
+                                                onChange={(e) => setTipoPessoa(e.target.value)}>
                                                 <option value="">Selecione...</option>
                                                 <option value="T">Todos</option>
                                                 <option value="S">Apenas Membros</option>
                                                 <option value="N">Apenas Visitantes</option>
                                             </select>
+                                        </div>
+
+                                        <div className="col-md-12 p-1">
+                                            <b className="labelDescC">Primeira conexão (opcional)</b>
+                                            <select className="form-select form-select-sm select"
+                                                value={primeiraConexaoDia} onChange={(e) => AlterarPrimeiraConexao(e.target.value)}>
+                                                <option value="">Sem filtro</option>
+                                                {DIAS_SEMANA.map((dia, indice) => (
+                                                    <option key={dia} value={indice}>Conectou pela primeira vez no último(a) {dia}</option>
+                                                ))}
+                                            </select>
+                                            {primeiraConexaoDia !== '' && (
+                                                <small className="text-muted">Somente visitantes que nunca tinham se conectado antes desse dia.</small>
+                                            )}
                                         </div>
 
                                         <div className="col-md-6 p-1">
@@ -266,7 +306,7 @@ function MensagensAgendamento() {
                                         </div>
 
                                         <div className="col-md-6 p-1">
-                                            <b className="labelDescC">Data do Disparo</b>
+                                            <b className="labelDescC">{recorrencia ? 'Data do Primeiro Disparo' : 'Data do Disparo'}</b>
                                             <input type="date" className="form-control form-control-sm"
                                                 value={data} onChange={(e) => setData(e.target.value)} />
                                         </div>
@@ -274,6 +314,18 @@ function MensagensAgendamento() {
                                             <b className="labelDescC">Horário do Disparo</b>
                                             <input type="time" className="form-control form-control-sm"
                                                 value={hora} onChange={(e) => setHora(e.target.value)} />
+                                        </div>
+
+                                        <div className="col-md-12 p-1">
+                                            <b className="labelDescC">Repetição</b>
+                                            <select className="form-select form-select-sm select"
+                                                value={recorrencia} onChange={(e) => setRecorrencia(e.target.value)}>
+                                                <option value="">Não repetir (disparo único)</option>
+                                                <option value="SEMANAL">Repetir toda semana</option>
+                                            </select>
+                                            {recorrencia && data && hora && (
+                                                <small className="text-muted">Será enviado toda {diaSemanaDisparo} às {hora}, até ser cancelado.</small>
+                                            )}
                                         </div>
                                     </div>
                                 </form>
